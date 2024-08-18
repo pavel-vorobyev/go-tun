@@ -20,15 +20,15 @@ func CreateTun(ip string) (*water.Interface, error) {
 		return nil, err
 	}
 
-	out, err := util.RunCommand(fmt.Sprintf("sudo ifconfig %s inet %s/8 %s alias", iface.Name(), ip, ip))
-	// out, err := util.RunCommand(fmt.Sprintf("sudo ip addr add %s/24 dev %s", ip, iface.Name()))
+	//out, err := util.RunCommand(fmt.Sprintf("sudo ifconfig %s inet %s/8 %s alias", iface.Name(), ip, ip))
+	out, err := util.RunCommand(fmt.Sprintf("sudo ip addr add %s/24 dev %s", ip, iface.Name()))
 	if err != nil {
 		log.Println(out, err)
 		return nil, err
 	}
 
-	out, err = util.RunCommand(fmt.Sprintf("sudo ifconfig %s up", iface.Name()))
-	// out, err = util.RunCommand(fmt.Sprintf("sudo ip link set dev %s up", iface.Name()))
+	//out, err = util.RunCommand(fmt.Sprintf("sudo ifconfig %s up", iface.Name()))
+	out, err = util.RunCommand(fmt.Sprintf("sudo ip link set dev %s up", iface.Name()))
 	if err != nil {
 		log.Println(out, err)
 		return nil, err
