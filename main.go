@@ -20,23 +20,28 @@ func CreateTun(ip string) (*water.Interface, error) {
 		return nil, err
 	}
 
-	out, err := util.RunCommand(fmt.Sprintf("sudo ip addr add %s/24 dev %s", ip, iface.Name()))
+	out, err := util.RunCommand(fmt.Sprintf("sudo ifconfig %s inet %s/8 %s alias", iface.Name(), ip, ip))
+	// out, err := util.RunCommand(fmt.Sprintf("sudo ip addr add %s/24 dev %s", ip, iface.Name()))
 	if err != nil {
 		log.Println(out, err)
 		return nil, err
 	}
 
-	out, err = util.RunCommand(fmt.Sprintf("sudo ip link set dev %s up", iface.Name()))
+	out, err = util.RunCommand(fmt.Sprintf("sudo ifconfig %s up", iface.Name()))
+	// out, err = util.RunCommand(fmt.Sprintf("sudo ip link set dev %s up", iface.Name()))
 	if err != nil {
 		log.Println(out, err)
 		return nil, err
 	}
+
+	log.Println(fmt.Sprintf("TUN started: %s", iface.Name()))
 
 	return iface, nil
 }
 
-func CreateListener() (*net.UDPConn, error) {
-	addr, err := net.ResolveUDPAddr("udp", "192.168.50.27:8933")
+func CreateUdpListener() (*net.UDPConn, error) {
+	addr, err := net.ResolveUDPAddr("udp", "0.0.0.0:5995")
+	// addr, err := net.ResolveUDPAddr("udp", "159.100.30.164:8933")
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -48,39 +53,27 @@ func ListenIface(iface *water.Interface, listener *net.UDPConn) {
 	packet := make([]byte, 65535)
 
 	for {
-		n, err := iface.Read(packet)
+		_, err := iface.Read(packet)
 		if err != nil {
 			log.Println(err)
 			continue
 		}
 
-		log.Println("packet from iface")
-
-		if udpAddr != nil {
-			//_, err := conn.Write(packet[:n])
-			_, err := listener.WriteToUDP(packet[:n], udpAddr)
-			if err != nil {
-				log.Println(err)
-			}
-		}
+		log.Println("packet from tun")
 	}
 }
 
-func Listen(iface *water.Interface, listener *net.UDPConn) {
-	for {
-		packet := make([]byte, 65535)
+func ListenUdpConnection(iface *water.Interface, listener *net.UDPConn) {
+	packet := make([]byte, 65535)
 
-		n, addr, err := listener.ReadFromUDP(packet)
+	for {
+		n, _, err := listener.ReadFromUDP(packet)
 		if err != nil {
 			log.Println(err)
 			continue
 		}
 
 		log.Println("packet from client")
-
-		if udpAddr == nil {
-			udpAddr = addr
-		}
 
 		if iface != nil {
 			_, err := iface.Write(packet[:n])
@@ -91,23 +84,21 @@ func Listen(iface *water.Interface, listener *net.UDPConn) {
 	}
 }
 
-var udpAddr *net.UDPAddr
-
 func main() {
-	iface, err := CreateTun("192.168.9.11")
+	iface, err := CreateTun("10.0.0.2")
 	if err != nil {
 		log.Println(err)
-		os.Exit(5)
+		os.Exit(1)
 	}
 
-	listener, err := CreateListener()
+	listener, err := CreateUdpListener()
 	if err != nil {
 		log.Println(err)
-		os.Exit(5)
+		os.Exit(1)
 	}
 
 	go ListenIface(iface, listener)
-	go Listen(iface, listener)
+	go ListenUdpConnection(iface, listener)
 
 	util.Serve()
 }
