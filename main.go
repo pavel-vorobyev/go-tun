@@ -7,6 +7,8 @@ import (
 	"go-tun/util"
 	"log"
 	"net"
+
+	"github.com/xitongsys/ethernet-go/header"
 )
 
 // TODO Constant peers count fix idea: set client's TUN IP to the packet on the client
@@ -24,7 +26,7 @@ func CreateUdpListener() (*net.UDPConn, error) {
 
 func ListenUdp(iface *water.Interface, listener *net.UDPConn) {
 	go func() {
-		packet := make([]byte, 65535)
+		packet := make([]byte, 1500)
 		for {
 			n, addr, err := listener.ReadFromUDP(packet)
 			if err != nil {
@@ -53,7 +55,7 @@ func ListenUdp(iface *water.Interface, listener *net.UDPConn) {
 
 func ListenTun(iface *water.Interface, listener *net.UDPConn) {
 	go func() {
-		packet := make([]byte, 65535)
+		packet := make([]byte, 1500)
 
 		for {
 			n, err := iface.Read(packet)
@@ -62,7 +64,7 @@ func ListenTun(iface *water.Interface, listener *net.UDPConn) {
 				continue
 			}
 
-			protocol, src, dst, err := util.ParsePacket(packet[:n])
+			protocol, src, dst, err := header.GetBase(packet[:n])
 			if err != nil {
 				log.Println(err)
 				continue
