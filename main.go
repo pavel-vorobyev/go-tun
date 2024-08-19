@@ -96,7 +96,7 @@ func ListenTun(iface *water.Interface, listener *net.UDPConn) {
 var connections = storage.NewStorage()
 
 func main() {
-	tun, err := network.CreateTun("10.8.0.2", "utun10", 1500)
+	tun, err := network.CreateTun("10.8.0.2", "tun0", 1500)
 	if err != nil {
 		log.Fatalln(fmt.Sprintf("Failed to create TUN: %s", err))
 	} else {
