@@ -40,7 +40,7 @@ func ListenUdp(iface *water.Interface, listener *net.UDPConn) {
 				continue
 			}
 
-			key := fmt.Sprintf("p: %d s: %s d: @%s", protocol, src, dst)
+			key := fmt.Sprintf("p: %s s: %s d: @%s", protocol, src, dst)
 			connections[key] = fmt.Sprintf("%s:%d", addr.IP.String(), addr.Port)
 
 			_, err = iface.Write(packet[:n])
@@ -70,7 +70,7 @@ func ListenTun(iface *water.Interface, listener *net.UDPConn) {
 				continue
 			}
 
-			key := fmt.Sprintf("p: %d s: %s d: @%s", protocol, src, dst)
+			key := fmt.Sprintf("p: %s s: %s d: @%s", protocol, src, dst)
 			log.Println(fmt.Sprintf("out: %s", key))
 		}
 	}()
