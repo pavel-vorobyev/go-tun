@@ -79,18 +79,18 @@ func ListenTun(iface *water.Interface, listener *net.UDPConn) {
 				continue
 			}
 
-			_, err = net.ResolveUDPAddr("udp", saddr)
+			uaddr, err := net.ResolveUDPAddr("udp", saddr)
 			if err != nil {
 				log.Println(err)
 				continue
 			}
 
-			//_, err = listener.WriteToUDP(packet, uaddr)
-			//if err != nil {
-			//	log.Println(err)
-			//} else {
-			//	log.Println(fmt.Sprintf("o: %s → %s", key, saddr))
-			//}
+			_, err = listener.WriteToUDP(packet, uaddr)
+			if err != nil {
+				log.Println(err)
+			} else {
+				log.Println(fmt.Sprintf("o: %s → %s", key, saddr))
+			}
 		}
 	}()
 }
