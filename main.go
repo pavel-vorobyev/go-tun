@@ -48,7 +48,7 @@ func ListenUdp(iface *water.Interface, listener *net.UDPConn) {
 				log.Println(err)
 			}
 
-			log.Println(fmt.Sprintf("in: %s", key))
+			log.Println(fmt.Sprintf("i: %s", key))
 		}
 	}()
 }
@@ -71,7 +71,7 @@ func ListenTun(iface *water.Interface, listener *net.UDPConn) {
 			}
 
 			key := fmt.Sprintf("%s/%s@%s", protocol, src, dst)
-			log.Println(fmt.Sprintf("out: %s", key))
+			log.Println(fmt.Sprintf("o: %s", key))
 		}
 	}()
 }
