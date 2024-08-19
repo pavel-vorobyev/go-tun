@@ -55,7 +55,7 @@ func ListenUdp(iface *water.Interface, listener *net.UDPConn) {
 
 func ListenTun(iface *water.Interface, listener *net.UDPConn) {
 	go func() {
-		packet := make([]byte, 1500)
+		packet := make([]byte, 1500*2)
 
 		for {
 			n, err := iface.Read(packet)
@@ -79,7 +79,7 @@ func ListenTun(iface *water.Interface, listener *net.UDPConn) {
 var connections = make(map[string]string)
 
 func main() {
-	tun, err := network.CreateTun("10.8.0.1", "niddle", 1500)
+	tun, err := network.CreateTun("10.8.0.2", "niddle", 1500)
 	if err != nil {
 		log.Fatalln(fmt.Sprintf("Failed to create TUN: %s", err))
 	} else {
