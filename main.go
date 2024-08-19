@@ -27,7 +27,7 @@ func CreateUdpListener() (*net.UDPConn, error) {
 
 func ListenUdp(iface *water.Interface, listener *net.UDPConn) {
 	go func() {
-		packet := make([]byte, 1500*2)
+		packet := make([]byte, 1500)
 		for {
 			n, uaddr, err := listener.ReadFromUDP(packet)
 			if err != nil {
@@ -58,7 +58,7 @@ func ListenUdp(iface *water.Interface, listener *net.UDPConn) {
 
 func ListenTun(iface *water.Interface, listener *net.UDPConn) {
 	go func() {
-		packet := make([]byte, 1500*2)
+		packet := make([]byte, 1500)
 
 		for {
 			n, err := iface.Read(packet)
