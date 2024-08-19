@@ -8,6 +8,8 @@ import (
 	"go-tun/util"
 	"log"
 	"net"
+
+	"github.com/xitongsys/ethernet-go/header"
 )
 
 // TODO Constant peers count fix idea: set client's TUN IP to the packet on the client
@@ -27,17 +29,17 @@ func ListenUdp(iface *water.Interface, listener *net.UDPConn) {
 	go func() {
 		packet := make([]byte, 1500*2)
 		for {
-			n, _, err := listener.ReadFromUDP(packet)
+			n, uaddr, err := listener.ReadFromUDP(packet)
 			if err != nil {
 				log.Println(err)
 				continue
 			}
 
-			//protocol, src, dst, err := header.GetBase(packet[:n])
-			//if err != nil {
-			//	log.Println(err)
-			//	continue
-			//}
+			protocol, src, dst, err := header.GetBase(packet[:n])
+			if err != nil {
+				log.Println(err)
+				continue
+			}
 
 			_, err = iface.Write(packet[:n])
 			if err != nil {
@@ -45,11 +47,11 @@ func ListenUdp(iface *water.Interface, listener *net.UDPConn) {
 				continue
 			}
 
-			//key := fmt.Sprintf("%s/%s@%s", protocol, src, dst)
-			//saddr := fmt.Sprintf("%s:%d", uaddr.IP.String(), uaddr.Port)
-			//connections.Put(key, saddr)
+			key := fmt.Sprintf("%s/%s@%s", protocol, src, dst)
+			saddr := fmt.Sprintf("%s:%d", uaddr.IP.String(), uaddr.Port)
+			connections.Put(key, saddr)
 
-			log.Println(fmt.Sprintf("i: %s ← %s", "key", raddr))
+			log.Println(fmt.Sprintf("i: %s ← %s", key, saddr))
 		}
 	}()
 }
@@ -59,40 +61,39 @@ func ListenTun(iface *water.Interface, listener *net.UDPConn) {
 		packet := make([]byte, 1500*2)
 
 		for {
-			_, err := iface.Read(packet)
+			n, err := iface.Read(packet)
 			if err != nil {
 				log.Println(err)
 				continue
 			}
 
-			//protocol, src, dst, err := header.GetBase(packet[:n])
-			//if err != nil {
-			//	log.Println(err)
-			//	continue
-			//}
-			//
-			//key := fmt.Sprintf("%s/%s@%s", protocol, dst, src)
-			//saddr, exists := connections.Get(key)
-			//if !exists {
-			//	continue
-			//}
-			//
-			//uaddr, err := net.ResolveUDPAddr("udp", saddr)
-			//if err != nil {
-			//	log.Println(err)
-			//	continue
-			//}
-
-			_, err = listener.WriteToUDP(packet, raddr)
+			protocol, src, dst, err := header.GetBase(packet[:n])
 			if err != nil {
-				log.Println(fmt.Sprintf("%s → %s", "key", raddr))
+				log.Println(err)
+				continue
+			}
+
+			key := fmt.Sprintf("%s/%s@%s", protocol, dst, src)
+			saddr, exists := connections.Get(key)
+			if !exists {
+				continue
+			}
+
+			uaddr, err := net.ResolveUDPAddr("udp", saddr)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+
+			_, err = listener.WriteToUDP(packet, uaddr)
+			if err != nil {
+				log.Println(fmt.Sprintf("%s → %s", key, saddr))
 			}
 		}
 	}()
 }
 
 var connections = storage.NewStorage()
-var raddr, _ = net.ResolveUDPAddr("udp", "91.202.27.121:53512")
 
 func main() {
 	tun, err := network.CreateTun("10.8.0.2", "tun0", 1500)
