@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/songgao/water"
 	"go-tun/network"
+	"go-tun/storage"
 	"go-tun/util"
 	"log"
 	"net"
@@ -41,7 +42,7 @@ func ListenUdp(iface *water.Interface, listener *net.UDPConn) {
 			}
 
 			key := fmt.Sprintf("%s/%s@%s", protocol, src, dst)
-			connections[key] = fmt.Sprintf("%s:%d", addr.IP.String(), addr.Port)
+			connections.Put(key, fmt.Sprintf("%s:%d", addr.IP.String(), addr.Port))
 
 			_, err = iface.Write(packet[:n])
 			if err != nil {
@@ -71,16 +72,20 @@ func ListenTun(iface *water.Interface, listener *net.UDPConn) {
 			}
 
 			key := fmt.Sprintf("%s/%s@%s", protocol, dst, src)
-			addr := connections[key]
-			log.Println(fmt.Sprintf("o: %s", addr))
+			addr, exists := connections.Get(key)
+			if !exists {
+				log.Println("o: address was not find")
+			} else {
+				log.Println(fmt.Sprintf("o: %s", addr))
+			}
 		}
 	}()
 }
 
-var connections = make(map[string]string)
+var connections = storage.NewStorage()
 
 func main() {
-	tun, err := network.CreateTun("10.8.0.2", "niddle", 1500)
+	tun, err := network.CreateTun("10.8.0.2", "utun10", 1500)
 	if err != nil {
 		log.Fatalln(fmt.Sprintf("Failed to create TUN: %s", err))
 	} else {
