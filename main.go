@@ -26,7 +26,7 @@ func CreateUdpListener() (*net.UDPConn, error) {
 
 func ListenUdp(iface *water.Interface, listener *net.UDPConn) {
 	go func() {
-		packet := make([]byte, 1500)
+		packet := make([]byte, 1500*2)
 		for {
 			n, addr, err := listener.ReadFromUDP(packet)
 			if err != nil {
