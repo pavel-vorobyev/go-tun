@@ -40,7 +40,7 @@ func ListenUdp(iface *water.Interface, listener *net.UDPConn) {
 				continue
 			}
 
-			key := fmt.Sprintf("%d/%s@%s", protocol, src, dst)
+			key := fmt.Sprintf("%s/%s@%s", protocol, src, dst)
 			connections[key] = fmt.Sprintf("%s:%d", addr.IP.String(), addr.Port)
 
 			_, err = iface.Write(packet[:n])
