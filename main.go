@@ -3,45 +3,18 @@ package main
 import (
 	"fmt"
 	"github.com/songgao/water"
+	"go-tun/network"
 	"go-tun/util"
 	"log"
 	"net"
-	"os"
 )
 
-func CreateTun(ip string) (*water.Interface, error) {
-	config := water.Config{
-		DeviceType: water.TUN,
-	}
-
-	iface, err := water.New(config)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-
-	//out, err := util.RunCommand(fmt.Sprintf("sudo ifconfig %s inet %s/8 %s alias", iface.Name(), ip, ip))
-	out, err := util.RunCommand(fmt.Sprintf("sudo ip addr add %s/24 dev %s", ip, iface.Name()))
-	if err != nil {
-		log.Println(out, err)
-		return nil, err
-	}
-
-	//out, err = util.RunCommand(fmt.Sprintf("sudo ifconfig %s up", iface.Name()))
-	out, err = util.RunCommand(fmt.Sprintf("sudo ip link set dev %s up", iface.Name()))
-	if err != nil {
-		log.Println(out, err)
-		return nil, err
-	}
-
-	log.Println(fmt.Sprintf("TUN started: %s", iface.Name()))
-
-	return iface, nil
-}
+// TODO Constant peers count fix idea: set client's TUN IP to the packet on the client
+// TODO Since client knows it's own TUN's IP address we can set it on the client
+// TODO And replace on the server with real IP address provided by UDP server
 
 func CreateUdpListener() (*net.UDPConn, error) {
 	addr, err := net.ResolveUDPAddr("udp", "0.0.0.0:5995")
-	// addr, err := net.ResolveUDPAddr("udp", "159.100.30.164:8933")
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -49,56 +22,70 @@ func CreateUdpListener() (*net.UDPConn, error) {
 	return net.ListenUDP("udp", addr)
 }
 
-func ListenIface(iface *water.Interface, listener *net.UDPConn) {
-	packet := make([]byte, 65535)
+func ListenUdp(iface *water.Interface, listener *net.UDPConn) {
+	go func() {
+		packet := make([]byte, 1500)
+		for {
+			n, addr, err := listener.ReadFromUDP(packet)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
 
-	for {
-		_, err := iface.Read(packet)
-		if err != nil {
-			log.Println(err)
-			continue
-		}
+			protocol, src, dst, err := util.ParsePacket(packet[:n])
+			if err != nil {
+				log.Println(err)
+				continue
+			}
 
-		log.Println("packet from tun")
-	}
-}
+			key := fmt.Sprintf("%d/%s@%s", protocol, src, dst)
+			connections[key] = fmt.Sprintf("%s:%d", addr.IP.String(), addr.Port)
 
-func ListenUdpConnection(iface *water.Interface, listener *net.UDPConn) {
-	packet := make([]byte, 65535)
-
-	for {
-		n, _, err := listener.ReadFromUDP(packet)
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-
-		log.Println("packet from client")
-
-		if iface != nil {
-			_, err := iface.Write(packet[:n])
+			_, err = iface.Write(packet[:n])
 			if err != nil {
 				log.Println(err)
 			}
+
+			log.Println(fmt.Sprintf("in: %s", key))
 		}
-	}
+	}()
 }
 
+func ListenTun(iface *water.Interface, listener *net.UDPConn) {
+	go func() {
+		packet := make([]byte, 1500)
+
+		for {
+			_, err := iface.Read(packet)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+
+			log.Println("packet from network")
+		}
+	}()
+}
+
+var connections = make(map[string]string)
+
 func main() {
-	iface, err := CreateTun("10.0.0.2")
+	tun, err := network.CreateTun("10.8.0.1", "niddle", 1500)
 	if err != nil {
-		log.Println(err)
-		os.Exit(1)
+		log.Fatalln(fmt.Sprintf("Failed to create TUN: %s", err))
+	} else {
+		log.Println(fmt.Sprintf("TUN device started; IP: %s; name: %s", tun.Ip, tun.Name))
 	}
 
 	listener, err := CreateUdpListener()
 	if err != nil {
-		log.Println(err)
-		os.Exit(1)
+		log.Fatalln(fmt.Sprintf("Failed to start UDP listener: %s", err))
+	} else {
+		log.Println(fmt.Sprintf("UDP listener started; port: %s", "8933"))
 	}
 
-	go ListenIface(iface, listener)
-	go ListenUdpConnection(iface, listener)
+	ListenUdp(tun.Interface, listener)
+	ListenTun(tun.Interface, listener)
 
 	util.Serve()
 }
