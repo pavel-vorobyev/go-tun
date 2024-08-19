@@ -70,7 +70,7 @@ func ListenTun(iface *water.Interface, listener *net.UDPConn) {
 				continue
 			}
 
-			key := fmt.Sprintf("%s/%s@%s", protocol, src, dst)
+			key := fmt.Sprintf("%s/%s@%s", protocol, dst, src)
 			log.Println(fmt.Sprintf("o: %s", key))
 		}
 	}()
