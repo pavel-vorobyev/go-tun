@@ -27,23 +27,23 @@ func CreateUdpListener() (*net.UDPConn, error) {
 
 func ListenUdp(iface *water.Interface, listener *net.UDPConn) {
 	go func() {
-		packet := make([]byte, 1500)
+		packet := make([]byte, 1500*2)
 		for {
 			n, uaddr, err := listener.ReadFromUDP(packet)
 			if err != nil {
-				//log.Println(err)
+				log.Println(err)
 				continue
 			}
 
 			protocol, src, dst, err := header.GetBase(packet[:n])
 			if err != nil {
-				//log.Println(err)
+				log.Println(err)
 				continue
 			}
 
 			_, err = iface.Write(packet[:n])
 			if err != nil {
-				//log.Println(err)
+				log.Println(err)
 				continue
 			}
 
@@ -51,25 +51,25 @@ func ListenUdp(iface *water.Interface, listener *net.UDPConn) {
 			saddr := fmt.Sprintf("%s:%d", uaddr.IP.String(), uaddr.Port)
 			connections.Put(key, saddr)
 
-			//log.Println(fmt.Sprintf("i: %s ← %s", key, saddr))
+			log.Println(fmt.Sprintf("i: %s ← %s", key, saddr))
 		}
 	}()
 }
 
 func ListenTun(iface *water.Interface, listener *net.UDPConn) {
 	go func() {
-		packet := make([]byte, 1500)
+		packet := make([]byte, 1500*2)
 
 		for {
 			n, err := iface.Read(packet)
 			if err != nil {
-				//log.Println(err)
+				log.Println(err)
 				continue
 			}
 
 			protocol, src, dst, err := header.GetBase(packet[:n])
 			if err != nil {
-				//log.Println(err)
+				log.Println(err)
 				continue
 			}
 
@@ -81,15 +81,15 @@ func ListenTun(iface *water.Interface, listener *net.UDPConn) {
 
 			uaddr, err := net.ResolveUDPAddr("udp", saddr)
 			if err != nil {
-				//log.Println(err)
+				log.Println(err)
 				continue
 			}
 
 			_, err = listener.WriteToUDP(packet, uaddr)
 			if err != nil {
-				//log.Println(err)
+				log.Println(err)
 			} else {
-				//log.Println(fmt.Sprintf("o: %s → %s", key, saddr))
+				log.Println(fmt.Sprintf("o: %s → %s", key, saddr))
 			}
 		}
 	}()
