@@ -2,6 +2,7 @@ package main
 
 import (
 	"go-tun/server"
+	"go-tun/util"
 	"log"
 )
 
@@ -12,4 +13,5 @@ func main() {
 		log.Fatalln(err)
 	}
 	s.Start()
+	util.Serve()
 }
