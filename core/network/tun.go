@@ -17,8 +17,8 @@ type Tun struct {
 func CreateTun(c *Config) (*Tun, error) {
 	config := water.Config{
 		DeviceType: water.TUN,
-		Name:       c.Name,
 	}
+	config.Name = c.Name
 
 	iface, err := water.New(config)
 	if err != nil {
