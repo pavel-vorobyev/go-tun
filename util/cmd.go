@@ -16,5 +16,4 @@ func RunCommand(command string) (string, error) {
 		return stderr.String(), err
 	}
 	return stdout.String(), err
-
 }
