@@ -95,6 +95,7 @@ func (s *Server) listenTun() {
 			}
 
 			cAddr := s.getCAddr(ptc, src, dst)
+			log.Println(fmt.Sprintf("cidr %s", cAddr))
 			log.Println(fmt.Sprintf("out: %s %s %s %s:%d", ptc, src, dst, cAddr.IP.String(), cAddr.Port))
 
 			s.conn.Send(&transport.Data{
