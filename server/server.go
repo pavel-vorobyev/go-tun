@@ -88,11 +88,15 @@ func (s *Server) listenConn() {
 func (s *Server) listenTun() {
 	go func() {
 		for {
-			data := s.tun.Receive()
+			data, err := s.tun.Receive()
+			if err != nil {
+				//log.Println(fmt.Sprintf("SERVER: failed to read from tun: %s", err))
+				continue
+			}
 
 			ptc, src, dst, err := header.GetBase(data)
 			if err != nil {
-				//log.Println(fmt.Sprintf("SERVER: failed to read from tun: %s", err))
+				//log.Println(fmt.Sprintf("SERVER: failed to parse packet from tun: %s", err))
 				continue
 			}
 
