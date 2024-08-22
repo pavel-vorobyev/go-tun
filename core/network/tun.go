@@ -38,10 +38,10 @@ func CreateTun(c *Config) (*Tun, error) {
 		out:   make(chan []byte),
 	}
 
-	//err = tun.up()
-	//if err != nil {
-	//	return nil, err
-	//}
+	err = tun.up()
+	if err != nil {
+		return nil, err
+	}
 
 	return tun, nil
 }
