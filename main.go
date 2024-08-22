@@ -1,15 +1,19 @@
 package main
 
-import "go-tun/simple"
+import (
+	"go-tun/server"
+	"go-tun/util"
+	"log"
+)
 
 func main() {
-	//options := server.CreateOptions()
-	//s, err := server.CreateServer(options)
-	//if err != nil {
-	//	log.Fatalln(err)
-	//}
-	//s.Start()
-	//util.Serve()
+	options := server.CreateOptions()
+	s, err := server.CreateServer(options)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	s.Start()
+	util.Serve()
 
-	simple.Run()
+	// simple.Run()
 }
