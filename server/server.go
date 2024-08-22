@@ -52,7 +52,7 @@ func CreateServer(options *Options) (*Server, error) {
 }
 
 func (s *Server) Start() {
-	s.tun.Start()
+	//s.tun.Start()
 	//s.conn.Start()
 	s.listen()
 }

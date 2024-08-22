@@ -34,38 +34,38 @@ func CreateConn(c *Config) (*UDPConn, error) {
 }
 
 func (conn *UDPConn) Start() {
-	go func() {
-		packet := make([]byte, conn.mtu*2)
-		for {
-			n, addr, err := conn.conn.ReadFromUDP(packet)
-			if err != nil {
-				//log.Println(fmt.Sprintf("UDP: failed to read packet: %s", err))
-				continue
-			}
-
-			conn.out <- &Data{
-				Data:  packet[:n],
-				CAddr: addr.String(),
-			}
-		}
-	}()
-	go func() {
-		for {
-			data := <-conn.in
-
-			addr, err := net.ResolveUDPAddr("udp", data.CAddr)
-			if err != nil {
-				//log.Println(fmt.Sprintf("UDP: failed to resolve address: %s", err))
-				continue
-			}
-
-			_, err = conn.conn.WriteToUDP(data.Data, addr)
-			if err != nil {
-				//log.Println(fmt.Sprintf("UDP: failed to write packet: %s", err))
-				continue
-			}
-		}
-	}()
+	//go func() {
+	//	packet := make([]byte, conn.mtu*2)
+	//	for {
+	//		n, addr, err := conn.conn.ReadFromUDP(packet)
+	//		if err != nil {
+	//			//log.Println(fmt.Sprintf("UDP: failed to read packet: %s", err))
+	//			continue
+	//		}
+	//
+	//		conn.out <- &Data{
+	//			Data:  packet[:n],
+	//			CAddr: addr.String(),
+	//		}
+	//	}
+	//}()
+	//go func() {
+	//	for {
+	//		data := <-conn.in
+	//
+	//		addr, err := net.ResolveUDPAddr("udp", data.CAddr)
+	//		if err != nil {
+	//			//log.Println(fmt.Sprintf("UDP: failed to resolve address: %s", err))
+	//			continue
+	//		}
+	//
+	//		_, err = conn.conn.WriteToUDP(data.Data, addr)
+	//		if err != nil {
+	//			//log.Println(fmt.Sprintf("UDP: failed to write packet: %s", err))
+	//			continue
+	//		}
+	//	}
+	//}()
 }
 
 func (conn *UDPConn) Receive() (*Data, error) {
@@ -91,6 +91,5 @@ func (conn *UDPConn) Send(data *Data) {
 	_, err = conn.conn.WriteToUDP(data.Data, addr)
 	if err != nil {
 		//log.Println(fmt.Sprintf("UDP: failed to write packet: %s", err))
-		return
 	}
 }
