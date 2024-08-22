@@ -85,7 +85,7 @@ func (s *Server) listenConn() {
 func (s *Server) listenTun() {
 	go func() {
 		for {
-			data := s.tun.Receive()
+			_ = s.tun.Receive()
 			log.Println(fmt.Sprintf("out: %s", "1"))
 
 			//ptc, src, dst, err := header.GetBase(data)
