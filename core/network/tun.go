@@ -56,7 +56,7 @@ func (tun *Tun) Start() {
 				log.Println(fmt.Sprintf("TUN: failed to read packet: %s", err))
 				continue
 			}
-			tun.out <- packet[n:]
+			tun.out <- packet[:n]
 		}
 	}()
 	go func() {
