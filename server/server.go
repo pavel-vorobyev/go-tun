@@ -27,6 +27,7 @@ func CreateServer(options *Options) (*Server, error) {
 	tunConf := &network.Config{
 		Name: conf.TunName,
 		Ip:   conf.TunIp,
+		Cidr: conf.TunCidr,
 		Mtu:  conf.Mtu,
 	}
 	connConf := &transport.Config{
@@ -93,7 +94,7 @@ func (s *Server) listenTun() {
 
 			cAddr := s.getCAddr(ptc, src, dst)
 			log.Println(fmt.Sprintf("out: %s %s %s %s:%d", ptc, src, dst, cAddr.IP.String(), cAddr.Port))
-			
+
 			s.conn.Send(&transport.Data{
 				Data:  data,
 				CAddr: cAddr,
