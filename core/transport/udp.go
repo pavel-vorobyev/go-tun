@@ -41,16 +41,25 @@ func (conn *UDPConn) Start() {
 				log.Println(fmt.Sprintf("UDP: failed to read packet: %s", err))
 				continue
 			}
+
+			cAddr := fmt.Sprintf("%s:%d", addr.IP.String(), addr.Port)
 			conn.out <- &Data{
 				Data:  packet[:n],
-				CAddr: addr,
+				CAddr: cAddr,
 			}
 		}
 	}()
 	go func() {
 		for {
 			data := <-conn.in
-			_, err := conn.conn.WriteToUDP(data.Data, data.CAddr)
+
+			addr, err := net.ResolveUDPAddr("udp", data.CAddr)
+			if err != nil {
+				log.Println(fmt.Sprintf("UDP: failed to resolve address: %s", err))
+				continue
+			}
+
+			_, err = conn.conn.WriteToUDP(data.Data, addr)
 			if err != nil {
 				log.Println(fmt.Sprintf("UDP: failed to write packet: %s", err))
 				continue

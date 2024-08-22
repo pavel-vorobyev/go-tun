@@ -75,7 +75,7 @@ func (s *Server) listenConn() {
 				continue
 			}
 
-			log.Println(fmt.Sprintf("in: %s %s %s %s:%d", ptc, src, dst, data.CAddr.IP.String(), data.CAddr.Port))
+			log.Println(fmt.Sprintf("in: %s %s %s %s", ptc, src, dst, data.CAddr))
 
 			s.storeCAddr(ptc, src, dst, data.CAddr)
 			s.tun.Send(data.Data)
@@ -95,26 +95,22 @@ func (s *Server) listenTun() {
 			}
 
 			cAddr := s.getCAddr(ptc, src, dst)
-			if cAddr == nil {
-				continue
-			}
-
 			s.conn.Send(&transport.Data{
 				Data:  data,
 				CAddr: cAddr,
 			})
 
-			log.Println(fmt.Sprintf("out: %s %s %s %s:%d", ptc, src, dst, cAddr.IP.String(), cAddr.Port))
+			log.Println(fmt.Sprintf("out: %s %s %s %s", ptc, src, dst, cAddr))
 		}
 	}()
 }
 
-func (s *Server) storeCAddr(ptc string, src string, dst string, cAddr *transport.CAddr) {
+func (s *Server) storeCAddr(ptc string, src string, dst string, cAddr string) {
 	key := s.cAddrKeyFactory.Get(ptc, src, dst)
 	s.cAddrStore.Set(key, cAddr)
 }
 
-func (s *Server) getCAddr(ptc string, src string, dst string) *transport.CAddr {
+func (s *Server) getCAddr(ptc string, src string, dst string) string {
 	key := s.cAddrKeyFactory.Get(ptc, dst, src)
 	return s.cAddrStore.Get(key)
 }
