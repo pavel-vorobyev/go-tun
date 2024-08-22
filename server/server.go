@@ -71,6 +71,7 @@ func (s *Server) listenConn() {
 
 			ptc, src, dst, err := header.GetBase(data.Data)
 			if err != nil {
+				log.Println(fmt.Sprintf("SERVER: failed to read from con: %s", err))
 				continue
 			}
 
@@ -85,21 +86,22 @@ func (s *Server) listenConn() {
 func (s *Server) listenTun() {
 	go func() {
 		for {
-			_ = s.tun.Receive()
+			data := s.tun.Receive()
 			log.Println(fmt.Sprintf("out: %s", "1"))
 
-			//ptc, src, dst, err := header.GetBase(data)
-			//if err != nil {
-			//	continue
-			//}
-			//
-			//cAddr := s.getCAddr(ptc, src, dst)
-			//log.Println(fmt.Sprintf("out: %s %s %s %s:%d", ptc, src, dst, cAddr.IP.String(), cAddr.Port))
-			//
-			//s.conn.Send(&transport.Data{
-			//	Data:  data,
-			//	CAddr: cAddr,
-			//})
+			ptc, src, dst, err := header.GetBase(data)
+			if err != nil {
+				log.Println(fmt.Sprintf("SERVER: failed to read from tun: %s", err))
+				continue
+			}
+
+			cAddr := s.getCAddr(ptc, src, dst)
+			log.Println(fmt.Sprintf("out: %s %s %s %s:%d", ptc, src, dst, cAddr.IP.String(), cAddr.Port))
+
+			s.conn.Send(&transport.Data{
+				Data:  data,
+				CAddr: cAddr,
+			})
 		}
 	}()
 }
