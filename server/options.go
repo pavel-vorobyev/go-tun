@@ -19,7 +19,7 @@ func CreateOptions() *Options {
 	}
 }
 
-func (opt *Options) SetCustomConfigProver(cp config.Provider) *Options {
+func (opt *Options) SetCustomConfigProvider(cp config.Provider) *Options {
 	opt.configProvider = cp
 	return opt
 }

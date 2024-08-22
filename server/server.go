@@ -52,12 +52,6 @@ func CreateServer(options *Options) (*Server, error) {
 }
 
 func (s *Server) Start() {
-	//s.tun.Start()
-	//s.conn.Start()
-	s.listen()
-}
-
-func (s *Server) listen() {
 	s.listenConn()
 	s.listenTun()
 }
@@ -80,7 +74,7 @@ func (s *Server) listenConn() {
 			//log.Println(fmt.Sprintf("in: %s %s %s %s", ptc, src, dst, data.CAddr))
 
 			s.storeCAddr(ptc, src, dst, data.CAddr)
-			s.tun.Send(data.Data)
+			_ = s.tun.Send(data.Data)
 		}
 	}()
 }
@@ -101,7 +95,7 @@ func (s *Server) listenTun() {
 			}
 
 			cAddr := s.getCAddr(ptc, src, dst)
-			s.conn.Send(&transport.Data{
+			_ = s.conn.Send(&transport.Data{
 				Data:  data,
 				CAddr: cAddr,
 			})

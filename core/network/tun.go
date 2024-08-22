@@ -41,44 +41,20 @@ func CreateTun(c *Config) (*Tun, error) {
 	return tun, nil
 }
 
-func (tun *Tun) Start() {
-	//go func() {
-	//	packet := make([]byte, tun.mtu*2)
-	//	for {
-	//		n, err := tun.iface.Read(packet)
-	//		if err != nil {
-	//			//log.Println(fmt.Sprintf("TUN: failed to read packet: %s", err))
-	//			continue
-	//		}
-	//		tun.out <- packet[:n]
-	//	}
-	//}()
-	//go func() {
-	//	for {
-	//		packet := <-tun.in
-	//		_, err := tun.iface.Write(packet)
-	//		if err != nil {
-	//			//log.Println(fmt.Sprintf("TUN: failed to write packet: %s", err))
-	//			continue
-	//		}
-	//	}
-	//}()
-}
-
 func (tun *Tun) Receive() ([]byte, error) {
 	n, err := tun.iface.Read(tun.readPacket)
 	if err != nil {
-		//log.Println(fmt.Sprintf("TUN: failed to read packet: %s", err))
-		return nil, err
+		return nil, fmt.Errorf("failed to read from tun: %s", err)
 	}
 	return tun.readPacket[:n], err
 }
 
-func (tun *Tun) Send(data []byte) {
+func (tun *Tun) Send(data []byte) error {
 	_, err := tun.iface.Write(data)
 	if err != nil {
-		//log.Println(fmt.Sprintf("TUN: failed to write packet: %s", err))
+		return fmt.Errorf("failed to write to tun: %s", err)
 	}
+	return nil
 }
 
 func (tun *Tun) up() error {
