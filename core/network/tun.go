@@ -1,12 +1,15 @@
 package network
 
 import (
+	"fmt"
 	"github.com/songgao/water"
+	"go-tun/util"
 )
 
 type Tun struct {
 	name string
 	ip   string
+	cidr int
 	mtu  int
 
 	iface *water.Interface
@@ -25,14 +28,22 @@ func CreateTun(c *Config) (*Tun, error) {
 		return nil, err
 	}
 
-	return &Tun{
+	tun := &Tun{
 		name:  iface.Name(),
 		ip:    c.Ip,
+		cidr:  c.Cidr,
 		mtu:   c.Mtu,
 		iface: iface,
 		in:    make(chan []byte),
 		out:   make(chan []byte),
-	}, nil
+	}
+
+	err = tun.up()
+	if err != nil {
+		return nil, err
+	}
+
+	return tun, nil
 }
 
 func (tun *Tun) Start() {
@@ -63,4 +74,16 @@ func (tun *Tun) Receive() []byte {
 
 func (tun *Tun) Send(data []byte) {
 	tun.in <- data
+}
+
+func (tun *Tun) up() error {
+	_, err := util.RunCommand(fmt.Sprintf("sudo ip addr add %s/%d dev %s", tun.ip, tun.cidr, tun.name))
+	if err != nil {
+		return err
+	}
+	_, err = util.RunCommand(fmt.Sprintf("sudo ip link set dev %s up", tun.name))
+	if err != nil {
+		return err
+	}
+	return nil
 }

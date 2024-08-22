@@ -1,11 +1,13 @@
 package server
 
 import (
+	"fmt"
 	"github.com/xitongsys/ethernet-go/header"
 	"go-tun/core/network"
 	"go-tun/core/transport"
 	"go-tun/server/config"
 	"go-tun/server/storage/address"
+	"log"
 )
 
 type Server struct {
@@ -71,6 +73,8 @@ func (s *Server) listenConn() {
 				continue
 			}
 
+			log.Println(fmt.Sprintf("in: %s %s %s %s:%d", ptc, src, dst, data.CAddr.IP.String(), data.CAddr.Port))
+
 			s.storeCAddr(ptc, src, dst, data.CAddr)
 			s.tun.Send(data.Data)
 		}
@@ -88,6 +92,8 @@ func (s *Server) listenTun() {
 			}
 
 			cAddr := s.getCAddr(ptc, src, dst)
+			log.Println(fmt.Sprintf("out: %s %s %s %s:%d", ptc, src, dst, cAddr.IP.String(), cAddr.Port))
+			
 			s.conn.Send(&transport.Data{
 				Data:  data,
 				CAddr: cAddr,
