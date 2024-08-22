@@ -53,7 +53,7 @@ func CreateServer(options *Options) (*Server, error) {
 
 func (s *Server) Start() {
 	s.tun.Start()
-	s.conn.Start()
+	//s.conn.Start()
 	s.listen()
 }
 
@@ -65,11 +65,15 @@ func (s *Server) listen() {
 func (s *Server) listenConn() {
 	go func() {
 		for {
-			data := s.conn.Receive()
+			data, err := s.conn.Receive()
+			if err != nil {
+				//log.Println(fmt.Sprintf("SERVER: failed to read from con: %s", err))
+				continue
+			}
 
 			ptc, src, dst, err := header.GetBase(data.Data)
 			if err != nil {
-				//log.Println(fmt.Sprintf("SERVER: failed to read from con: %s", err))
+				//log.Println(fmt.Sprintf("SERVER: failed to parse packet from con: %s", err))
 				continue
 			}
 

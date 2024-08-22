@@ -6,10 +6,11 @@ import (
 )
 
 type UDPConn struct {
-	conn *net.UDPConn
-	mtu  int
-	in   chan *Data
-	out  chan *Data
+	conn       *net.UDPConn
+	mtu        int
+	in         chan *Data
+	out        chan *Data
+	readPacket []byte
 }
 
 func CreateConn(c *Config) (*UDPConn, error) {
@@ -24,10 +25,11 @@ func CreateConn(c *Config) (*UDPConn, error) {
 	}
 
 	return &UDPConn{
-		conn: conn,
-		mtu:  c.Mtu,
-		in:   make(chan *Data),
-		out:  make(chan *Data),
+		conn:       conn,
+		mtu:        c.Mtu,
+		in:         make(chan *Data),
+		out:        make(chan *Data),
+		readPacket: make([]byte, c.Mtu*2),
 	}, nil
 }
 
@@ -66,10 +68,29 @@ func (conn *UDPConn) Start() {
 	}()
 }
 
-func (conn *UDPConn) Receive() *Data {
-	return <-conn.out
+func (conn *UDPConn) Receive() (*Data, error) {
+	n, addr, err := conn.conn.ReadFromUDP(conn.readPacket)
+	if err != nil {
+		//log.Println(fmt.Sprintf("UDP: failed to read packet: %s", err))
+		return nil, err
+	}
+
+	return &Data{
+		Data:  conn.readPacket[:n],
+		CAddr: addr.String(),
+	}, nil
 }
 
 func (conn *UDPConn) Send(data *Data) {
-	conn.in <- data
+	addr, err := net.ResolveUDPAddr("udp", data.CAddr)
+	if err != nil {
+		//log.Println(fmt.Sprintf("UDP: failed to resolve address: %s", err))
+		return
+	}
+
+	_, err = conn.conn.WriteToUDP(data.Data, addr)
+	if err != nil {
+		//log.Println(fmt.Sprintf("UDP: failed to write packet: %s", err))
+		return
+	}
 }
