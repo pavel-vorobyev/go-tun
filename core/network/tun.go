@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/songgao/water"
 	"go-tun/util"
+	"log"
 )
 
 type Tun struct {
@@ -52,6 +53,7 @@ func (tun *Tun) Start() {
 		for {
 			n, err := tun.iface.Read(packet)
 			if err != nil {
+				log.Println(fmt.Sprintf("TUN: failed to read packet: %s", err))
 				continue
 			}
 			tun.out <- packet[n:]
@@ -62,6 +64,7 @@ func (tun *Tun) Start() {
 			packet := <-tun.in
 			_, err := tun.iface.Write(packet)
 			if err != nil {
+				log.Println(fmt.Sprintf("TUN: failed to write packet: %s", err))
 				continue
 			}
 		}

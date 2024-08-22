@@ -2,6 +2,7 @@ package transport
 
 import (
 	"fmt"
+	"log"
 	"net"
 )
 
@@ -37,6 +38,7 @@ func (conn *UDPConn) Start() {
 		for {
 			n, addr, err := conn.conn.ReadFromUDP(packet)
 			if err != nil {
+				log.Println(fmt.Sprintf("UDP: failed to read packet: %s", err))
 				continue
 			}
 			conn.out <- &Data{
@@ -50,6 +52,7 @@ func (conn *UDPConn) Start() {
 			data := <-conn.in
 			_, err := conn.conn.WriteToUDP(data.Data, data.CAddr)
 			if err != nil {
+				log.Println(fmt.Sprintf("UDP: failed to write packet: %s", err))
 				continue
 			}
 		}
