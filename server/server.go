@@ -95,13 +95,16 @@ func (s *Server) listenTun() {
 			}
 
 			cAddr := s.getCAddr(ptc, src, dst)
-			log.Println(fmt.Sprintf("cidr %s", cAddr))
-			log.Println(fmt.Sprintf("out: %s %s %s %s:%d", ptc, src, dst, cAddr.IP.String(), cAddr.Port))
+			if cAddr == nil {
+				continue
+			}
 
 			s.conn.Send(&transport.Data{
 				Data:  data,
 				CAddr: cAddr,
 			})
+
+			log.Println(fmt.Sprintf("out: %s %s %s %s:%d", ptc, src, dst, cAddr.IP.String(), cAddr.Port))
 		}
 	}()
 }
