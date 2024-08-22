@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/songgao/water"
 	"go-tun/util"
-	"log"
 )
 
 type Tun struct {
@@ -49,11 +48,11 @@ func CreateTun(c *Config) (*Tun, error) {
 
 func (tun *Tun) Start() {
 	go func() {
-		packet := make([]byte, tun.mtu)
+		packet := make([]byte, tun.mtu*2)
 		for {
 			n, err := tun.iface.Read(packet)
 			if err != nil {
-				log.Println(fmt.Sprintf("TUN: failed to read packet: %s", err))
+				//log.Println(fmt.Sprintf("TUN: failed to read packet: %s", err))
 				continue
 			}
 			tun.out <- packet[:n]
@@ -64,7 +63,7 @@ func (tun *Tun) Start() {
 			packet := <-tun.in
 			_, err := tun.iface.Write(packet)
 			if err != nil {
-				log.Println(fmt.Sprintf("TUN: failed to write packet: %s", err))
+				//log.Println(fmt.Sprintf("TUN: failed to write packet: %s", err))
 				continue
 			}
 		}

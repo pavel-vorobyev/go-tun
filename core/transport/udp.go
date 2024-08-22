@@ -2,7 +2,6 @@ package transport
 
 import (
 	"fmt"
-	"log"
 	"net"
 )
 
@@ -34,18 +33,17 @@ func CreateConn(c *Config) (*UDPConn, error) {
 
 func (conn *UDPConn) Start() {
 	go func() {
-		packet := make([]byte, conn.mtu)
+		packet := make([]byte, conn.mtu*2)
 		for {
 			n, addr, err := conn.conn.ReadFromUDP(packet)
 			if err != nil {
-				log.Println(fmt.Sprintf("UDP: failed to read packet: %s", err))
+				//log.Println(fmt.Sprintf("UDP: failed to read packet: %s", err))
 				continue
 			}
 
-			cAddr := fmt.Sprintf("%s:%d", addr.IP.String(), addr.Port)
 			conn.out <- &Data{
 				Data:  packet[:n],
-				CAddr: cAddr,
+				CAddr: addr.String(),
 			}
 		}
 	}()
@@ -55,13 +53,13 @@ func (conn *UDPConn) Start() {
 
 			addr, err := net.ResolveUDPAddr("udp", data.CAddr)
 			if err != nil {
-				log.Println(fmt.Sprintf("UDP: failed to resolve address: %s", err))
+				//log.Println(fmt.Sprintf("UDP: failed to resolve address: %s", err))
 				continue
 			}
 
 			_, err = conn.conn.WriteToUDP(data.Data, addr)
 			if err != nil {
-				log.Println(fmt.Sprintf("UDP: failed to write packet: %s", err))
+				//log.Println(fmt.Sprintf("UDP: failed to write packet: %s", err))
 				continue
 			}
 		}
