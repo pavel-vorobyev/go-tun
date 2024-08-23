@@ -5,6 +5,7 @@ import (
 	"go-tun/core/network"
 	"go-tun/core/transport"
 	"go-tun/server/config"
+	"go-tun/server/packet"
 	"go-tun/server/storage/address"
 )
 
@@ -14,6 +15,13 @@ type Server struct {
 	conn            *transport.UDPConn
 	cAddrKeyFactory address.CAddrKeyFactory
 	cAddrStore      address.CAddrStore
+	rxModifiers     []packet.Modifier
+	txModifiers     []packet.Modifier
+	rxCallbacks     []packet.Callback
+	txCallbacks     []packet.Callback
+
+	rxCallbackCallQueue chan *packet.CallbackCall
+	txCallbackCallQueue chan *packet.CallbackCall
 }
 
 func CreateServer(options *Options) (*Server, error) {
@@ -48,12 +56,20 @@ func CreateServer(options *Options) (*Server, error) {
 		conn:            conn,
 		cAddrKeyFactory: options.cAddrKeyFactory,
 		cAddrStore:      options.cAddrStore,
+		rxModifiers:     options.rxModifiers,
+		txModifiers:     options.txModifiers,
+		rxCallbacks:     options.rxCallbacks,
+		txCallbacks:     options.txCallbacks,
+
+		rxCallbackCallQueue: make(chan *packet.CallbackCall),
+		txCallbackCallQueue: make(chan *packet.CallbackCall),
 	}, nil
 }
 
 func (s *Server) Start() {
 	s.listenConn()
 	s.listenTun()
+	s.callCallbacks()
 }
 
 func (s *Server) listenConn() {
@@ -75,6 +91,13 @@ func (s *Server) listenConn() {
 
 			s.storeCAddr(ptc, src, dst, data.CAddr)
 			_ = s.tun.Send(data.Data)
+
+			s.rxCallbackCallQueue <- &packet.CallbackCall{
+				Ptc:  ptc,
+				Src:  src,
+				Dst:  dst,
+				Data: data.Data,
+			}
 		}
 	}()
 }
@@ -100,6 +123,13 @@ func (s *Server) listenTun() {
 				CAddr: cAddr,
 			})
 
+			s.txCallbackCallQueue <- &packet.CallbackCall{
+				Ptc:  ptc,
+				Src:  src,
+				Dst:  dst,
+				Data: data,
+			}
+
 			//log.Println(fmt.Sprintf("out: %s %s %s %s", ptc, src, dst, cAddr))
 		}
 	}()
@@ -113,4 +143,19 @@ func (s *Server) storeCAddr(ptc string, src string, dst string, cAddr string) {
 func (s *Server) getCAddr(ptc string, src string, dst string) string {
 	key := s.cAddrKeyFactory.Get(ptc, dst, src)
 	return s.cAddrStore.Get(key)
+}
+
+func (s *Server) callCallbacks() {
+	go func() {
+		call := <-s.rxCallbackCallQueue
+		for _, callback := range s.rxCallbacks {
+			callback.Call(call)
+		}
+	}()
+	go func() {
+		call := <-s.txCallbackCallQueue
+		for _, callback := range s.txCallbacks {
+			callback.Call(call)
+		}
+	}()
 }
