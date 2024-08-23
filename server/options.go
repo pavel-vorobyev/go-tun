@@ -21,40 +21,37 @@ func CreateOptions() *Options {
 		configProvider:  &config.DefaultConfigProvider{},
 		cAddrKeyFactory: &address.DefaultCAddrKeyFactory{},
 		cAddrStore:      address.NewDefaultCAddrStore(),
+		rxModifiers:     make([]packet.Modifier, 0),
+		txModifiers:     make([]packet.Modifier, 0),
+		rxCallbacks:     make([]packet.Callback, 0),
+		txCallbacks:     make([]packet.Callback, 0),
 	}
 }
 
-func (opt *Options) SetCustomConfigProvider(cp config.Provider) *Options {
+func (opt *Options) SetCustomConfigProvider(cp config.Provider) {
 	opt.configProvider = cp
-	return opt
 }
 
-func (opt *Options) SetCustomSrcAddressKeyFactory(kf address.CAddrKeyFactory) *Options {
+func (opt *Options) SetCustomSrcAddressKeyFactory(kf address.CAddrKeyFactory) {
 	opt.cAddrKeyFactory = kf
-	return opt
 }
 
-func (opt *Options) SetCustomSrcAddressStore(s address.CAddrStore) *Options {
+func (opt *Options) SetCustomSrcAddressStore(s address.CAddrStore) {
 	opt.cAddrStore = s
-	return opt
 }
 
-func (opt *Options) AddRxModifier(m packet.Modifier) *Options {
+func (opt *Options) AddRxModifier(m packet.Modifier) {
 	opt.rxModifiers = append(opt.rxModifiers, m)
-	return opt
 }
 
-func (opt *Options) AddTxModifier(m packet.Modifier) *Options {
+func (opt *Options) AddTxModifier(m packet.Modifier) {
 	opt.txModifiers = append(opt.txModifiers, m)
-	return opt
 }
 
-func (opt *Options) AddRxCallback(c packet.Callback) *Options {
+func (opt *Options) AddRxCallback(c packet.Callback) {
 	opt.rxCallbacks = append(opt.rxCallbacks, c)
-	return opt
 }
 
-func (opt *Options) AddTxCallback(c packet.Callback) *Options {
+func (opt *Options) AddTxCallback(c packet.Callback) {
 	opt.txCallbacks = append(opt.txCallbacks, c)
-	return opt
 }

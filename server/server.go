@@ -77,27 +77,18 @@ func (s *Server) listenConn() {
 		for {
 			data, err := s.conn.Receive()
 			if err != nil {
-				//log.Println(fmt.Sprintf("SERVER: failed to read from con: %s", err))
 				continue
 			}
 
 			ptc, src, dst, err := header.GetBase(data.Data)
 			if err != nil {
-				//log.Println(fmt.Sprintf("SERVER: failed to parse packet from con: %s", err))
 				continue
 			}
-
-			//log.Println(fmt.Sprintf("in: %s %s %s %s", ptc, src, dst, data.CAddr))
 
 			s.storeCAddr(ptc, src, dst, data.CAddr)
 			_ = s.tun.Send(data.Data)
 
-			s.rxCallbackCallQueue <- &packet.CallbackCall{
-				Ptc:  ptc,
-				Src:  src,
-				Dst:  dst,
-				Data: data.Data,
-			}
+			s.addRxCallbackCall(ptc, src, dst, data.Data)
 		}
 	}()
 }
@@ -107,13 +98,11 @@ func (s *Server) listenTun() {
 		for {
 			data, err := s.tun.Receive()
 			if err != nil {
-				//log.Println(fmt.Sprintf("SERVER: failed to read from tun: %s", err))
 				continue
 			}
 
 			ptc, src, dst, err := header.GetBase(data)
 			if err != nil {
-				//log.Println(fmt.Sprintf("SERVER: failed to parse packet from tun: %s", err))
 				continue
 			}
 
@@ -123,26 +112,9 @@ func (s *Server) listenTun() {
 				CAddr: cAddr,
 			})
 
-			s.txCallbackCallQueue <- &packet.CallbackCall{
-				Ptc:  ptc,
-				Src:  src,
-				Dst:  dst,
-				Data: data,
-			}
-
-			//log.Println(fmt.Sprintf("out: %s %s %s %s", ptc, src, dst, cAddr))
+			s.addRxCallbackCall(ptc, src, dst, data)
 		}
 	}()
-}
-
-func (s *Server) storeCAddr(ptc string, src string, dst string, cAddr string) {
-	key := s.cAddrKeyFactory.Get(ptc, src, dst)
-	s.cAddrStore.Set(key, cAddr)
-}
-
-func (s *Server) getCAddr(ptc string, src string, dst string) string {
-	key := s.cAddrKeyFactory.Get(ptc, dst, src)
-	return s.cAddrStore.Get(key)
 }
 
 func (s *Server) callCallbacks() {
@@ -158,4 +130,32 @@ func (s *Server) callCallbacks() {
 			callback.Call(call)
 		}
 	}()
+}
+
+func (s *Server) storeCAddr(ptc string, src string, dst string, cAddr string) {
+	key := s.cAddrKeyFactory.Get(ptc, src, dst)
+	s.cAddrStore.Set(key, cAddr)
+}
+
+func (s *Server) getCAddr(ptc string, src string, dst string) string {
+	key := s.cAddrKeyFactory.Get(ptc, dst, src)
+	return s.cAddrStore.Get(key)
+}
+
+func (s *Server) addRxCallbackCall(ptc string, src string, dst string, data []byte) {
+	s.rxCallbackCallQueue <- &packet.CallbackCall{
+		Ptc:  ptc,
+		Src:  src,
+		Dst:  dst,
+		Data: data,
+	}
+}
+
+func (s *Server) addTxCallbackCall(ptc string, src string, dst string, data []byte) {
+	s.txCallbackCallQueue <- &packet.CallbackCall{
+		Ptc:  ptc,
+		Src:  src,
+		Dst:  dst,
+		Data: data,
+	}
 }

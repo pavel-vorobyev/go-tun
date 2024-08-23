@@ -1,5 +1,7 @@
 package packet
 
+import "log"
+
 type Callback interface {
 	Call(call *CallbackCall)
 }
@@ -15,6 +17,8 @@ type TrafficCallback struct {
 	t int
 }
 
-func (c *TrafficCallback) Call(args CallbackCall) {
-	c.t = c.t + len(args.Data)
+func (c *TrafficCallback) Call(args *CallbackCall) {
+	l := len(args.Data)
+	c.t = c.t + l
+	log.Println(l)
 }
