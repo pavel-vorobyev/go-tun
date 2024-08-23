@@ -63,16 +63,15 @@ func CreateServer(options *Options) (*Server, error) {
 		rxCallbacks:     options.rxCallbacks,
 		txCallbacks:     options.txCallbacks,
 
-		rxCallbackCallQueue: make(chan *packet.CallbackCall),
-		txCallbackCallQueue: make(chan *packet.CallbackCall),
-		a:                   make(chan string),
+		rxCallbackCallQueue: make(chan *packet.CallbackCall, 1024),
+		txCallbackCallQueue: make(chan *packet.CallbackCall, 1024),
 	}, nil
 }
 
 func (s *Server) Start() {
 	s.listenConn()
 	s.listenTun()
-	//s.callCallbacks()
+	s.callCallbacks()
 }
 
 func (s *Server) listenConn() {
@@ -91,7 +90,7 @@ func (s *Server) listenConn() {
 			s.storeCAddr(ptc, src, dst, data.CAddr)
 			_ = s.tun.Send(data.Data)
 
-			//s.addRxCallbackCall(ptc, src, dst, data.Data)
+			s.addRxCallbackCall(ptc, src, dst, data.Data)
 		}
 	}()
 }
@@ -115,9 +114,7 @@ func (s *Server) listenTun() {
 				CAddr: cAddr,
 			})
 
-			s.a <- "qwe"
-
-			//s.addRxCallbackCall(ptc, src, dst, data)
+			s.addRxCallbackCall(ptc, src, dst, data)
 		}
 	}()
 }
