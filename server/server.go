@@ -22,6 +22,8 @@ type Server struct {
 
 	rxCallbackCallQueue chan *packet.CallbackCall
 	txCallbackCallQueue chan *packet.CallbackCall
+
+	a chan string
 }
 
 func CreateServer(options *Options) (*Server, error) {
@@ -63,6 +65,7 @@ func CreateServer(options *Options) (*Server, error) {
 
 		rxCallbackCallQueue: make(chan *packet.CallbackCall),
 		txCallbackCallQueue: make(chan *packet.CallbackCall),
+		a:                   make(chan string),
 	}, nil
 }
 
@@ -112,7 +115,9 @@ func (s *Server) listenTun() {
 				CAddr: cAddr,
 			})
 
-			s.addRxCallbackCall(ptc, src, dst, data)
+			s.a <- "qwe"
+
+			//s.addRxCallbackCall(ptc, src, dst, data)
 		}
 	}()
 }
