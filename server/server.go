@@ -156,6 +156,7 @@ func (s *Server) getCAddr(ptc string, src string, dst string) string {
 }
 
 func (s *Server) addRxCallbackCall(ptc string, src string, dst string, data []byte) {
+	log.Println(len(s.rxCallbacks))
 	if len(s.rxCallbacks) != 0 {
 		s.rxCallbackCallQueue.Put(
 			&packet.CallbackCall{
