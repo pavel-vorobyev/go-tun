@@ -7,6 +7,7 @@ import (
 	"go-tun/server/config"
 	"go-tun/server/packet"
 	"go-tun/server/storage/address"
+	"go-tun/util"
 )
 
 type Server struct {
@@ -20,10 +21,8 @@ type Server struct {
 	rxCallbacks     []packet.Callback
 	txCallbacks     []packet.Callback
 
-	rxCallbackCallQueue chan *packet.CallbackCall
-	txCallbackCallQueue chan *packet.CallbackCall
-
-	a chan string
+	rxCallbackCallQueue *util.ConcurrentQueue[packet.CallbackCall]
+	txCallbackCallQueue *util.ConcurrentQueue[packet.CallbackCall]
 }
 
 func CreateServer(options *Options) (*Server, error) {
@@ -63,8 +62,8 @@ func CreateServer(options *Options) (*Server, error) {
 		rxCallbacks:     options.rxCallbacks,
 		txCallbacks:     options.txCallbacks,
 
-		rxCallbackCallQueue: make(chan *packet.CallbackCall, 1024),
-		txCallbackCallQueue: make(chan *packet.CallbackCall, 1024),
+		rxCallbackCallQueue: &util.ConcurrentQueue[packet.CallbackCall]{},
+		txCallbackCallQueue: &util.ConcurrentQueue[packet.CallbackCall]{},
 	}, nil
 }
 
@@ -121,13 +120,13 @@ func (s *Server) listenTun() {
 
 func (s *Server) callCallbacks() {
 	go func() {
-		call := <-s.rxCallbackCallQueue
+		call := s.rxCallbackCallQueue.Pop()
 		for _, callback := range s.rxCallbacks {
 			callback.Call(call)
 		}
 	}()
 	go func() {
-		call := <-s.txCallbackCallQueue
+		call := s.txCallbackCallQueue.Pop()
 		for _, callback := range s.txCallbacks {
 			callback.Call(call)
 		}
@@ -145,19 +144,23 @@ func (s *Server) getCAddr(ptc string, src string, dst string) string {
 }
 
 func (s *Server) addRxCallbackCall(ptc string, src string, dst string, data []byte) {
-	s.rxCallbackCallQueue <- &packet.CallbackCall{
-		Ptc:  ptc,
-		Src:  src,
-		Dst:  dst,
-		Data: data,
-	}
+	s.rxCallbackCallQueue.Put(
+		&packet.CallbackCall{
+			Ptc:  ptc,
+			Src:  src,
+			Dst:  dst,
+			Data: data,
+		},
+	)
 }
 
 func (s *Server) addTxCallbackCall(ptc string, src string, dst string, data []byte) {
-	s.txCallbackCallQueue <- &packet.CallbackCall{
-		Ptc:  ptc,
-		Src:  src,
-		Dst:  dst,
-		Data: data,
-	}
+	s.txCallbackCallQueue.Put(
+		&packet.CallbackCall{
+			Ptc:  ptc,
+			Src:  src,
+			Dst:  dst,
+			Data: data,
+		},
+	)
 }
