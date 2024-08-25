@@ -78,7 +78,7 @@ func (s *Server) Start() {
 func (s *Server) listenConn() {
 	go func() {
 		for {
-			_, data, err := s.conn.Receive()
+			n, data, err := s.conn.Receive()
 			if err != nil {
 				continue
 			}
@@ -91,7 +91,7 @@ func (s *Server) listenConn() {
 			s.storeCAddr(ptc, src, dst, data.CAddr)
 			_ = s.tun.Send(data.Data)
 
-			//s.addRxCallbackCall(ptc, src, dst, n)
+			s.addRxCallbackCall(ptc, src, dst, n)
 		}
 	}()
 }
@@ -99,7 +99,7 @@ func (s *Server) listenConn() {
 func (s *Server) listenTun() {
 	go func() {
 		for {
-			_, data, err := s.tun.Receive()
+			n, data, err := s.tun.Receive()
 			if err != nil {
 				continue
 			}
@@ -115,7 +115,7 @@ func (s *Server) listenTun() {
 				CAddr: cAddr,
 			})
 
-			//s.addTxCallbackCall(ptc, src, dst, n)
+			s.addTxCallbackCall(ptc, src, dst, n)
 		}
 	}()
 }
