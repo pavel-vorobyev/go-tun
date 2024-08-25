@@ -30,7 +30,7 @@ func CreateTun(c *Config) (*Tun, error) {
 		iface:      iface,
 		in:         make(chan []byte),
 		out:        make(chan []byte),
-		readPacket: make([]byte, c.Mtu*2),
+		readPacket: make([]byte, c.Mtu),
 	}
 
 	err = tun.up()
