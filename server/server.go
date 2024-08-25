@@ -121,7 +121,7 @@ func (s *Server) listenTun() {
 }
 
 func (s *Server) callCallbacks() {
-	if s.rxCallbackCallQueue.Length() != 0 {
+	if len(s.rxCallbacks) != 0 {
 		go func() {
 			if call := s.rxCallbackCallQueue.Pop(); call != nil {
 				for _, callback := range s.rxCallbacks {
@@ -130,7 +130,7 @@ func (s *Server) callCallbacks() {
 			}
 		}()
 	}
-	if s.txCallbackCallQueue.Length() != 0 {
+	if len(s.txCallbacks) != 0 {
 		go func() {
 			if call := s.txCallbackCallQueue.Pop(); call != nil {
 				for _, callback := range s.txCallbacks {
@@ -152,7 +152,7 @@ func (s *Server) getCAddr(ptc string, src string, dst string) string {
 }
 
 func (s *Server) addRxCallbackCall(ptc string, src string, dst string, data []byte) {
-	if s.rxCallbackCallQueue.Length() != 0 {
+	if len(s.rxCallbacks) != 0 {
 		s.rxCallbackCallQueue.Put(
 			&packet.CallbackCall{
 				Ptc:  ptc,
@@ -165,7 +165,7 @@ func (s *Server) addRxCallbackCall(ptc string, src string, dst string, data []by
 }
 
 func (s *Server) addTxCallbackCall(ptc string, src string, dst string, data []byte) {
-	if s.txCallbackCallQueue.Length() != 0 {
+	if len(s.txCallbacks) != 0 {
 		s.txCallbackCallQueue.Put(
 			&packet.CallbackCall{
 				Ptc:  ptc,
