@@ -41,12 +41,12 @@ func CreateTun(c *Config) (*Tun, error) {
 	return tun, nil
 }
 
-func (tun *Tun) Receive() ([]byte, error) {
+func (tun *Tun) Receive() (int, []byte, error) {
 	n, err := tun.iface.Read(tun.readPacket)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read from tun: %s", err)
+		return 0, nil, fmt.Errorf("failed to read from tun: %s", err)
 	}
-	return tun.readPacket[:n], err
+	return n, tun.readPacket[:n], err
 }
 
 func (tun *Tun) Send(data []byte) error {

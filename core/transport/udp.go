@@ -33,12 +33,12 @@ func CreateConn(c *Config) (*UDPConn, error) {
 	}, nil
 }
 
-func (conn *UDPConn) Receive() (*Data, error) {
+func (conn *UDPConn) Receive() (int, *Data, error) {
 	n, addr, err := conn.conn.ReadFromUDP(conn.readPacket)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read from udp: %s", err)
+		return 0, nil, fmt.Errorf("failed to read from udp: %s", err)
 	}
-	return &Data{
+	return n, &Data{
 		Data:  conn.readPacket[:n],
 		CAddr: addr.String(),
 	}, nil

@@ -5,10 +5,10 @@ type Callback interface {
 }
 
 type CallbackCall struct {
-	Ptc  string
-	Src  string
-	Dst  string
-	Data []byte
+	Ptc string
+	Src string
+	Dst string
+	Len int
 }
 
 type TrafficCallback struct {
@@ -16,6 +16,5 @@ type TrafficCallback struct {
 }
 
 func (c *TrafficCallback) Call(args *CallbackCall) {
-	l := len(args.Data)
-	c.T = c.T + l
+	c.T = c.T + args.Len
 }
