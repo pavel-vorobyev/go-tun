@@ -19,14 +19,6 @@ func main() {
 	options := server.CreateOptions()
 	options.AddRxCallback(rxTc)
 	options.AddTxCallback(txTc)
-	options.AddRxCallback(rxTc)
-	options.AddTxCallback(txTc)
-	options.AddRxCallback(rxTc)
-	options.AddTxCallback(txTc)
-	options.AddRxCallback(rxTc)
-	options.AddTxCallback(txTc)
-	options.AddRxCallback(rxTc)
-	options.AddTxCallback(txTc)
 
 	s, err := server.CreateServer(options)
 	if err != nil {
