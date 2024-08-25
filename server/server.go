@@ -136,6 +136,26 @@ func (s *Server) callCallbacks() {
 
 		}
 	}()
+	go func() {
+		for {
+
+		}
+	}()
+	go func() {
+		for {
+
+		}
+	}()
+	go func() {
+		for {
+
+		}
+	}()
+	go func() {
+		for {
+
+		}
+	}()
 	//if len(s.rxCallbacks) != 0 {
 	//	go func() {
 	//		for {
