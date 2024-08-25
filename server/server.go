@@ -127,6 +127,8 @@ func (s *Server) callCallbacks() {
 				for _, callback := range s.rxCallbacks {
 					callback.Call(call)
 				}
+			} else {
+				log.Println("call nil")
 			}
 		}()
 	}
@@ -136,6 +138,8 @@ func (s *Server) callCallbacks() {
 				for _, callback := range s.txCallbacks {
 					callback.Call(call)
 				}
+			} else {
+				log.Println("call nil")
 			}
 		}()
 	}
