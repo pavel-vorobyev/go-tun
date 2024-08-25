@@ -21,8 +21,8 @@ type Server struct {
 	txModifiers         []packet.Modifier
 	rxCallbacks         []packet.Callback
 	txCallbacks         []packet.Callback
-	rxCallbackCallQueue *util.Queue[packet.CallbackCall]
-	txCallbackCallQueue *util.Queue[packet.CallbackCall]
+	rxCallbackCallQueue *util.ConcurrentQueue[packet.CallbackCall]
+	txCallbackCallQueue *util.ConcurrentQueue[packet.CallbackCall]
 }
 
 func CreateServer(options *Options) (*Server, error) {
@@ -64,8 +64,8 @@ func CreateServer(options *Options) (*Server, error) {
 		txModifiers:         options.txModifiers,
 		rxCallbacks:         options.rxCallbacks,
 		txCallbacks:         options.txCallbacks,
-		rxCallbackCallQueue: &util.Queue[packet.CallbackCall]{},
-		txCallbackCallQueue: &util.Queue[packet.CallbackCall]{},
+		rxCallbackCallQueue: &util.ConcurrentQueue[packet.CallbackCall]{},
+		txCallbackCallQueue: &util.ConcurrentQueue[packet.CallbackCall]{},
 	}, nil
 }
 
@@ -91,13 +91,13 @@ func (s *Server) listenConn() {
 			s.storeCAddr(ptc, src, dst, data.CAddr)
 			_ = s.tun.Send(data.Data)
 
-			for _, callback := range s.rxCallbacks {
-				callback.Call(&packet.CallbackCall{
-					Ptc: ptc, Src: src, Dst: dst, N: n,
-				})
-			}
+			//for _, callback := range s.rxCallbacks {
+			//	callback.Call(&packet.CallbackCall{
+			//		Ptc: ptc, Src: src, Dst: dst, N: n,
+			//	})
+			//}
 
-			// s.addRxCallbackCall(ptc, src, dst, n)
+			s.addRxCallbackCall(ptc, src, dst, n)
 		}
 	}()
 }
@@ -121,13 +121,13 @@ func (s *Server) listenTun() {
 				CAddr: cAddr,
 			})
 
-			for _, callback := range s.txCallbacks {
-				callback.Call(&packet.CallbackCall{
-					Ptc: ptc, Src: src, Dst: dst, N: n,
-				})
-			}
+			//for _, callback := range s.txCallbacks {
+			//	callback.Call(&packet.CallbackCall{
+			//		Ptc: ptc, Src: src, Dst: dst, N: n,
+			//	})
+			//}
 
-			// s.addTxCallbackCall(ptc, src, dst, n)
+			s.addTxCallbackCall(ptc, src, dst, n)
 		}
 	}()
 }
@@ -167,28 +167,28 @@ func (s *Server) getCAddr(ptc string, src string, dst string) string {
 	return s.cAddrStore.Get(key)
 }
 
-//func (s *Server) addRxCallbackCall(ptc string, src string, dst string, l int) {
-//	if len(s.rxCallbacks) != 0 {
-//		s.rxCallbackCallQueue.Put(
-//			&packet.CallbackCall{
-//				Ptc: ptc,
-//				Src: src,
-//				Dst: dst,
-//				Len: l,
-//			},
-//		)
-//	}
-//}
-//
-//func (s *Server) addTxCallbackCall(ptc string, src string, dst string, l int) {
-//	if len(s.txCallbacks) != 0 {
-//		s.txCallbackCallQueue.Put(
-//			&packet.CallbackCall{
-//				Ptc: ptc,
-//				Src: src,
-//				Dst: dst,
-//				Len: l,
-//			},
-//		)
-//	}
-//}
+func (s *Server) addRxCallbackCall(ptc string, src string, dst string, n int) {
+	if len(s.rxCallbacks) != 0 {
+		s.rxCallbackCallQueue.Put(
+			&packet.CallbackCall{
+				Ptc: ptc,
+				Src: src,
+				Dst: dst,
+				N:   n,
+			},
+		)
+	}
+}
+
+func (s *Server) addTxCallbackCall(ptc string, src string, dst string, n int) {
+	if len(s.txCallbacks) != 0 {
+		s.txCallbackCallQueue.Put(
+			&packet.CallbackCall{
+				Ptc: ptc,
+				Src: src,
+				Dst: dst,
+				N:   n,
+			},
+		)
+	}
+}
