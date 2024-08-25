@@ -78,7 +78,7 @@ func (s *Server) Start() {
 func (s *Server) listenConn() {
 	go func() {
 		for {
-			n, data, err := s.conn.Receive()
+			_, data, err := s.conn.Receive()
 			if err != nil {
 				continue
 			}
@@ -99,7 +99,7 @@ func (s *Server) listenConn() {
 func (s *Server) listenTun() {
 	go func() {
 		for {
-			n, data, err := s.tun.Receive()
+			_, data, err := s.tun.Receive()
 			if err != nil {
 				continue
 			}
