@@ -10,6 +10,7 @@ import (
 func main() {
 	options := server.CreateOptions()
 	options.AddRxCallback(&packet.TrafficCallback{})
+	options.AddTxCallback(&packet.TrafficCallback{})
 
 	s, err := server.CreateServer(options)
 	if err != nil {

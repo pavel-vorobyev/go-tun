@@ -20,5 +20,5 @@ type TrafficCallback struct {
 func (c *TrafficCallback) Call(args *CallbackCall) {
 	l := len(args.Data)
 	c.t = c.t + l
-	log.Println(l)
+	log.Println(c.t)
 }

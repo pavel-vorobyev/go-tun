@@ -19,9 +19,13 @@ func (q *Queue[T]) Pop() *T {
 	return nil
 }
 
+func (q *Queue[T]) Length() int {
+	return len(q.data)
+}
+
 type ConcurrentQueue[T any] struct {
 	queue Queue[T]
-	mutex sync.Mutex
+	mutex sync.RWMutex
 }
 
 func (q *ConcurrentQueue[T]) Put(i *T) {
@@ -35,4 +39,11 @@ func (q *ConcurrentQueue[T]) Pop() *T {
 	item := q.queue.Pop()
 	q.mutex.Unlock()
 	return item
+}
+
+func (q *ConcurrentQueue[T]) Length() int {
+	q.mutex.RLock()
+	length := q.Length()
+	q.mutex.RUnlock()
+	return length
 }
