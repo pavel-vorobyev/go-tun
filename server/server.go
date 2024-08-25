@@ -91,7 +91,7 @@ func (s *Server) listenConn() {
 			s.storeCAddr(ptc, src, dst, data.CAddr)
 			_ = s.tun.Send(data.Data)
 
-			s.addRxCallbackCall(ptc, src, dst, n)
+			//s.addRxCallbackCall(ptc, src, dst, n)
 		}
 	}()
 }
@@ -115,7 +115,7 @@ func (s *Server) listenTun() {
 				CAddr: cAddr,
 			})
 
-			s.addTxCallbackCall(ptc, src, dst, n)
+			//s.addTxCallbackCall(ptc, src, dst, n)
 		}
 	}()
 }
