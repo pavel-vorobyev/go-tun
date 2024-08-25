@@ -77,6 +77,9 @@ func (s *Server) Start() {
 
 func (s *Server) listenConn() {
 	go func() {
+		defer func() {
+			log.Println(s.rxCallbackCallQueue.Length())
+		}()
 		for {
 			n, data, err := s.conn.Receive()
 			if err != nil {
