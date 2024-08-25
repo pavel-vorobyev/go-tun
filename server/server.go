@@ -9,7 +9,6 @@ import (
 	"go-tun/server/storage/address"
 	"go-tun/util"
 	"log"
-	"time"
 )
 
 type Server struct {
@@ -79,7 +78,6 @@ func (s *Server) Start() {
 func (s *Server) listenConn() {
 	go func() {
 		for {
-			start := time.Now()
 			n, data, err := s.conn.Receive()
 			if err != nil {
 				continue
@@ -93,16 +91,7 @@ func (s *Server) listenConn() {
 			s.storeCAddr(ptc, src, dst, data.CAddr)
 			_ = s.tun.Send(data.Data)
 
-			//for _, callback := range s.rxCallbacks {
-			//	callback.Call(&packet.CallbackCall{
-			//		Ptc: ptc, Src: src, Dst: dst, N: n,
-			//	})
-			//}
-
 			s.addRxCallbackCall(ptc, src, dst, n)
-
-			elapsed := time.Since(start)
-			log.Println(elapsed)
 		}
 	}()
 }
@@ -125,12 +114,6 @@ func (s *Server) listenTun() {
 				Data:  data,
 				CAddr: cAddr,
 			})
-
-			//for _, callback := range s.txCallbacks {
-			//	callback.Call(&packet.CallbackCall{
-			//		Ptc: ptc, Src: src, Dst: dst, N: n,
-			//	})
-			//}
 
 			s.addTxCallbackCall(ptc, src, dst, n)
 		}
