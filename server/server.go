@@ -73,7 +73,7 @@ func CreateServer(options *Options) (*Server, error) {
 func (s *Server) Start() {
 	s.listenConn()
 	s.listenTun()
-	s.callCallbacks()
+	//s.callCallbacks()
 }
 
 func (s *Server) listenConn() {
