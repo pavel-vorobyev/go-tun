@@ -121,7 +121,7 @@ func (s *Server) listenTun() {
 				CAddr: cAddr,
 			})
 
-			for _, callback := range s.rxCallbacks {
+			for _, callback := range s.txCallbacks {
 				callback.Call(&packet.CallbackCall{
 					Ptc: ptc, Src: src, Dst: dst, N: n,
 				})
