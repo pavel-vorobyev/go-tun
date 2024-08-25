@@ -8,7 +8,7 @@ type CallbackCall struct {
 	Ptc string
 	Src string
 	Dst string
-	Len int
+	N   int
 }
 
 type TrafficCallback struct {
@@ -16,5 +16,5 @@ type TrafficCallback struct {
 }
 
 func (c *TrafficCallback) Call(args *CallbackCall) {
-	c.T = c.T + args.Len
+	c.T = c.T + args.N
 }

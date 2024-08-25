@@ -78,7 +78,7 @@ func (s *Server) Start() {
 func (s *Server) listenConn() {
 	go func() {
 		for {
-			_, data, err := s.conn.Receive()
+			n, data, err := s.conn.Receive()
 			if err != nil {
 				continue
 			}
@@ -91,6 +91,12 @@ func (s *Server) listenConn() {
 			s.storeCAddr(ptc, src, dst, data.CAddr)
 			_ = s.tun.Send(data.Data)
 
+			for _, callback := range s.rxCallbacks {
+				callback.Call(&packet.CallbackCall{
+					Ptc: ptc, Src: src, Dst: dst, N: n,
+				})
+			}
+
 			// s.addRxCallbackCall(ptc, src, dst, n)
 		}
 	}()
@@ -99,7 +105,7 @@ func (s *Server) listenConn() {
 func (s *Server) listenTun() {
 	go func() {
 		for {
-			_, data, err := s.tun.Receive()
+			n, data, err := s.tun.Receive()
 			if err != nil {
 				continue
 			}
@@ -114,6 +120,12 @@ func (s *Server) listenTun() {
 				Data:  data,
 				CAddr: cAddr,
 			})
+
+			for _, callback := range s.rxCallbacks {
+				callback.Call(&packet.CallbackCall{
+					Ptc: ptc, Src: src, Dst: dst, N: n,
+				})
+			}
 
 			// s.addTxCallbackCall(ptc, src, dst, n)
 		}
@@ -155,28 +167,28 @@ func (s *Server) getCAddr(ptc string, src string, dst string) string {
 	return s.cAddrStore.Get(key)
 }
 
-func (s *Server) addRxCallbackCall(ptc string, src string, dst string, l int) {
-	if len(s.rxCallbacks) != 0 {
-		s.rxCallbackCallQueue.Put(
-			&packet.CallbackCall{
-				Ptc: ptc,
-				Src: src,
-				Dst: dst,
-				Len: l,
-			},
-		)
-	}
-}
-
-func (s *Server) addTxCallbackCall(ptc string, src string, dst string, l int) {
-	if len(s.txCallbacks) != 0 {
-		s.txCallbackCallQueue.Put(
-			&packet.CallbackCall{
-				Ptc: ptc,
-				Src: src,
-				Dst: dst,
-				Len: l,
-			},
-		)
-	}
-}
+//func (s *Server) addRxCallbackCall(ptc string, src string, dst string, l int) {
+//	if len(s.rxCallbacks) != 0 {
+//		s.rxCallbackCallQueue.Put(
+//			&packet.CallbackCall{
+//				Ptc: ptc,
+//				Src: src,
+//				Dst: dst,
+//				Len: l,
+//			},
+//		)
+//	}
+//}
+//
+//func (s *Server) addTxCallbackCall(ptc string, src string, dst string, l int) {
+//	if len(s.txCallbacks) != 0 {
+//		s.txCallbackCallQueue.Put(
+//			&packet.CallbackCall{
+//				Ptc: ptc,
+//				Src: src,
+//				Dst: dst,
+//				Len: l,
+//			},
+//		)
+//	}
+//}
