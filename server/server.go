@@ -115,7 +115,7 @@ func (s *Server) listenTun() {
 				CAddr: cAddr,
 			})
 
-			s.addRxCallbackCall(ptc, src, dst, data)
+			s.addTxCallbackCall(ptc, src, dst, data)
 		}
 	}()
 }
