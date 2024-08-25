@@ -73,7 +73,7 @@ func CreateServer(options *Options) (*Server, error) {
 func (s *Server) Start() {
 	s.listenConn()
 	s.listenTun()
-	//s.callCallbacks()
+	s.callCallbacks()
 }
 
 func (s *Server) listenConn() {
@@ -142,9 +142,9 @@ func (s *Server) callCallbacks() {
 		go func() {
 			for {
 				if call := s.rxCallbackCallQueue.Pop(); call != nil {
-					for _, callback := range s.rxCallbacks {
-						callback.Call(call)
-					}
+					//for _, callback := range s.rxCallbacks {
+					//	callback.Call(call)
+					//}
 				}
 			}
 		}()
@@ -153,9 +153,9 @@ func (s *Server) callCallbacks() {
 		go func() {
 			for {
 				if call := s.txCallbackCallQueue.Pop(); call != nil {
-					for _, callback := range s.txCallbacks {
-						callback.Call(call)
-					}
+					//for _, callback := range s.txCallbacks {
+					//	callback.Call(call)
+					//}
 				}
 			}
 		}()
