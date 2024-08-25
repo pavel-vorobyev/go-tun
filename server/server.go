@@ -9,6 +9,7 @@ import (
 	"go-tun/server/storage/address"
 	"go-tun/util"
 	"log"
+	"time"
 )
 
 type Server struct {
@@ -78,6 +79,7 @@ func (s *Server) Start() {
 func (s *Server) listenConn() {
 	go func() {
 		for {
+			start := time.Now()
 			n, data, err := s.conn.Receive()
 			if err != nil {
 				continue
@@ -98,6 +100,9 @@ func (s *Server) listenConn() {
 			//}
 
 			s.addRxCallbackCall(ptc, src, dst, n)
+
+			elapsed := time.Since(start)
+			log.Println(elapsed)
 		}
 	}()
 }
