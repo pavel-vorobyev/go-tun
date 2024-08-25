@@ -7,13 +7,14 @@ import (
 	"log"
 )
 
+var rxTc = &packet.TrafficCallback{}
+var txTc = &packet.TrafficCallback{}
+
 func main() {
 	defer func() {
-		log.Println()
+		log.Println(rxTc.T)
+		log.Println(txTc.T)
 	}()
-
-	rxTc := &packet.TrafficCallback{}
-	txTc := &packet.TrafficCallback{}
 
 	options := server.CreateOptions()
 	options.AddRxCallback(rxTc)
