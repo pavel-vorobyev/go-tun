@@ -1,7 +1,5 @@
 package packet
 
-import "log"
-
 type Callback interface {
 	Call(call *CallbackCall)
 }
@@ -14,11 +12,10 @@ type CallbackCall struct {
 }
 
 type TrafficCallback struct {
-	t int
+	T int
 }
 
 func (c *TrafficCallback) Call(args *CallbackCall) {
 	l := len(args.Data)
-	c.t = c.t + l
-	log.Println(c.t)
+	c.T = c.T + l
 }

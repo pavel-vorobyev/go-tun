@@ -8,9 +8,16 @@ import (
 )
 
 func main() {
+	defer func() {
+		log.Println()
+	}()
+
+	rxTc := &packet.TrafficCallback{}
+	txTc := &packet.TrafficCallback{}
+
 	options := server.CreateOptions()
-	options.AddRxCallback(&packet.TrafficCallback{})
-	options.AddTxCallback(&packet.TrafficCallback{})
+	options.AddRxCallback(rxTc)
+	options.AddTxCallback(txTc)
 
 	s, err := server.CreateServer(options)
 	if err != nil {
