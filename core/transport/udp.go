@@ -29,7 +29,7 @@ func CreateConn(c *Config) (*UDPConn, error) {
 		mtu:        c.Mtu,
 		in:         make(chan *Data),
 		out:        make(chan *Data),
-		readPacket: make([]byte, c.Mtu),
+		readPacket: make([]byte, c.Mtu*2),
 	}, nil
 }
 
