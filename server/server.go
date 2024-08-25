@@ -124,8 +124,8 @@ func (s *Server) callCallbacks() {
 	if len(s.rxCallbacks) != 0 {
 		go func() {
 			if call := s.rxCallbackCallQueue.Pop(); call != nil {
+				log.Println(call)
 				for _, callback := range s.rxCallbacks {
-					log.Println(callback)
 					callback.Call(call)
 				}
 			}
@@ -134,8 +134,8 @@ func (s *Server) callCallbacks() {
 	if len(s.txCallbacks) != 0 {
 		go func() {
 			if call := s.txCallbackCallQueue.Pop(); call != nil {
+				log.Println(call)
 				for _, callback := range s.txCallbacks {
-					log.Println(callback)
 					callback.Call(call)
 				}
 			}
