@@ -8,6 +8,7 @@ import (
 	"go-tun/server/packet"
 	"go-tun/server/storage/address"
 	"go-tun/util"
+	"log"
 )
 
 type Server struct {
@@ -46,10 +47,13 @@ func CreateServer(options *Options) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Println("TUN device created and started")
+
 	conn, err := transport.CreateConn(connConf)
 	if err != nil {
 		return nil, err
 	}
+	log.Println("UDP listener created and started")
 
 	return &Server{
 		tun:                 tun,
