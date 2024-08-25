@@ -21,8 +21,8 @@ type Server struct {
 	txModifiers         []packet.Modifier
 	rxCallbacks         []packet.Callback
 	txCallbacks         []packet.Callback
-	rxCallbackCallQueue *util.ConcurrentQueue[packet.CallbackCall]
-	txCallbackCallQueue *util.ConcurrentQueue[packet.CallbackCall]
+	rxCallbackCallQueue *util.Queue[packet.CallbackCall]
+	txCallbackCallQueue *util.Queue[packet.CallbackCall]
 }
 
 func CreateServer(options *Options) (*Server, error) {
@@ -64,8 +64,8 @@ func CreateServer(options *Options) (*Server, error) {
 		txModifiers:         options.txModifiers,
 		rxCallbacks:         options.rxCallbacks,
 		txCallbacks:         options.txCallbacks,
-		rxCallbackCallQueue: &util.ConcurrentQueue[packet.CallbackCall]{},
-		txCallbackCallQueue: &util.ConcurrentQueue[packet.CallbackCall]{},
+		rxCallbackCallQueue: &util.Queue[packet.CallbackCall]{},
+		txCallbackCallQueue: &util.Queue[packet.CallbackCall]{},
 	}, nil
 }
 
@@ -154,7 +154,6 @@ func (s *Server) getCAddr(ptc string, src string, dst string) string {
 }
 
 func (s *Server) addRxCallbackCall(ptc string, src string, dst string, data []byte) {
-	log.Println(len(s.rxCallbacks))
 	if len(s.rxCallbacks) != 0 {
 		s.rxCallbackCallQueue.Put(
 			&packet.CallbackCall{

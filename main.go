@@ -25,7 +25,6 @@ func main() {
 		log.Fatalln(err)
 	}
 	s.Start()
-	util.Serve()
 
-	// simple.Run()
+	util.Serve()
 }
