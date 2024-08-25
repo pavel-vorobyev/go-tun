@@ -138,8 +138,6 @@ func (s *Server) callCallbacks() {
 					log.Println(callback)
 					callback.Call(call)
 				}
-			} else {
-				log.Println("call nil")
 			}
 		}()
 	}
