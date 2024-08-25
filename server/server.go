@@ -121,11 +121,20 @@ func (s *Server) listenTun() {
 }
 
 func (s *Server) callCallbacks() {
-	//go func() {
-	//	for {
-	//
-	//	}
-	//}()
+	go func() {
+		for {
+			if call := s.rxCallbackCallQueue.Pop(); call != nil {
+				for _, callback := range s.rxCallbacks {
+					callback.Call(call)
+				}
+			}
+			if call := s.txCallbackCallQueue.Pop(); call != nil {
+				for _, callback := range s.txCallbacks {
+					callback.Call(call)
+				}
+			}
+		}
+	}()
 	//go func() {
 	//	for {
 	//
@@ -134,22 +143,22 @@ func (s *Server) callCallbacks() {
 	//if len(s.rxCallbacks) != 0 {
 	//	go func() {
 	//		for {
-	//			//if call := s.rxCallbackCallQueue.Pop(); call != nil {
-	//			//	for _, callback := range s.rxCallbacks {
-	//			//		callback.Call(call)
-	//			//	}
-	//			//}
+	//			if call := s.rxCallbackCallQueue.Pop(); call != nil {
+	//				for _, callback := range s.rxCallbacks {
+	//					callback.Call(call)
+	//				}
+	//			}
 	//		}
 	//	}()
 	//}
 	//if len(s.txCallbacks) != 0 {
 	//	go func() {
 	//		for {
-	//			//if call := s.txCallbackCallQueue.Pop(); call != nil {
-	//			//	for _, callback := range s.txCallbacks {
-	//			//		callback.Call(call)
-	//			//	}
-	//			//}
+	//			if call := s.txCallbackCallQueue.Pop(); call != nil {
+	//				for _, callback := range s.txCallbacks {
+	//					callback.Call(call)
+	//				}
+	//			}
 	//		}
 	//	}()
 	//}
