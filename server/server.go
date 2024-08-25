@@ -123,24 +123,26 @@ func (s *Server) listenTun() {
 func (s *Server) callCallbacks() {
 	if len(s.rxCallbacks) != 0 {
 		go func() {
-			call := s.rxCallbackCallQueue.Pop()
-			log.Println(call)
-			//if call := s.rxCallbackCallQueue.Pop(); call != nil {
-			//	log.Println(call)
-			//	for _, callback := range s.rxCallbacks {
-			//		callback.Call(call)
-			//	}
-			//}
+			for {
+				if call := s.rxCallbackCallQueue.Pop(); call != nil {
+					log.Println(call)
+					for _, callback := range s.rxCallbacks {
+						callback.Call(call)
+					}
+				}
+			}
 		}()
 	}
 	if len(s.txCallbacks) != 0 {
 		go func() {
-			//if call := s.txCallbackCallQueue.Pop(); call != nil {
-			//	log.Println(call)
-			//	for _, callback := range s.txCallbacks {
-			//		callback.Call(call)
-			//	}
-			//}
+			for {
+				if call := s.txCallbackCallQueue.Pop(); call != nil {
+					log.Println(call)
+					for _, callback := range s.txCallbacks {
+						callback.Call(call)
+					}
+				}
+			}
 		}()
 	}
 }
