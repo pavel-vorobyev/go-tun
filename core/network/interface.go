@@ -26,11 +26,11 @@ func NewInterface(name string, mtu int) (*Interface, error) {
 	}
 
 	ifr := make([]byte, 18)
-	copy(ifr, []byte(name))
+	copy(ifr, name)
 	ifr[16] = IffTun
 	ifr[17] = IffNoPi
 
-	_, _, errno := syscall.Syscall(syscall.SYS_IOCTL, uintptr(fd.Fd()), uintptr(TunSetIff), uintptr(unsafe.Pointer(&ifr[0])))
+	_, _, errno := syscall.Syscall(syscall.SYS_IOCTL, fd.Fd(), uintptr(TunSetIff), uintptr(unsafe.Pointer(&ifr[0])))
 	if errno != 0 {
 		return nil, fmt.Errorf("ioctl open tun failed")
 	}
