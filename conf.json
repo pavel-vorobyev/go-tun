@@ -2,7 +2,7 @@
   "RemoteIp": "0.0.0.0",
   "RemotePort": 5995,
   "TunName": "tun0",
-  "TunIp": "10.8.0.2",
+  "TunIp": "10.8.0.1",
   "TunCidr": 24,
-  "Mtu": 1400
+  "Mtu": 1500
 }
