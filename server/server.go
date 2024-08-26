@@ -126,20 +126,20 @@ func (s *Server) listenTun() {
 }
 
 func (s *Server) callCallbacks() {
-	go func() {
-		for {
-			if call := s.rxCallbackCallQueue.Pop(); call != nil {
-				for _, callback := range s.rxCallbacks {
-					callback.Call(call)
-				}
-			}
-			if call := s.txCallbackCallQueue.Pop(); call != nil {
-				for _, callback := range s.txCallbacks {
-					callback.Call(call)
-				}
-			}
-		}
-	}()
+	//go func() {
+	//	for {
+	//		if call := s.rxCallbackCallQueue.Pop(); call != nil {
+	//			for _, callback := range s.rxCallbacks {
+	//				callback.Call(call)
+	//			}
+	//		}
+	//		if call := s.txCallbackCallQueue.Pop(); call != nil {
+	//			for _, callback := range s.txCallbacks {
+	//				callback.Call(call)
+	//			}
+	//		}
+	//	}
+	//}()
 	//go func() {
 	//	for {
 	//
