@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"github.com/xitongsys/ethernet-go/header"
 	"go-tun/core/network"
 	"go-tun/core/transport"
@@ -9,6 +10,8 @@ import (
 	"go-tun/server/storage/address"
 	"go-tun/util"
 	"log"
+	"os"
+	"runtime"
 )
 
 type Server struct {
@@ -47,13 +50,15 @@ func CreateServer(options *Options) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Println("TUN device created and started")
 
 	conn, err := transport.CreateConn(connConf)
 	if err != nil {
 		return nil, err
 	}
-	log.Println("UDP listener created and started")
+
+	log.Println("Server is ready")
+	log.Println(fmt.Sprintf("CPUs num: %d", runtime.NumCPU()))
+	log.Println(fmt.Sprintf("PID: %d", os.Getpid()))
 
 	return &Server{
 		tun:                 tun,
