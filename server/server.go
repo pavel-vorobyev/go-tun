@@ -96,7 +96,7 @@ func (s *Server) listenConn() {
 			s.storeCAddr(ptc, src, dst, data.CAddr)
 			_ = s.tun.Send(data.Data)
 
-			s.addRxCallbackCall(ptc, src, dst, n)
+			//s.addRxCallbackCall(ptc, src, dst, n)
 		}
 	}()
 }
@@ -120,28 +120,28 @@ func (s *Server) listenTun() {
 				CAddr: cAddr,
 			})
 
-			s.addTxCallbackCall(ptc, src, dst, n)
+			//s.addTxCallbackCall(ptc, src, dst, n)
 		}
 	}()
 }
 
 func (s *Server) callCallbacks() {
-	go func() {
-		for {
-			call := s.rxCallbackCallQueue.Pop()
-			if call != nil {
-				for _, callback := range s.rxCallbacks {
-					callback.Call(call)
-				}
-			}
-			call = s.txCallbackCallQueue.Pop()
-			if call != nil {
-				for _, callback := range s.txCallbacks {
-					callback.Call(call)
-				}
-			}
-		}
-	}()
+	//go func() {
+	//	for {
+	//		call := s.rxCallbackCallQueue.Pop()
+	//		if call != nil {
+	//			for _, callback := range s.rxCallbacks {
+	//				callback.Call(call)
+	//			}
+	//		}
+	//		call = s.txCallbackCallQueue.Pop()
+	//		if call != nil {
+	//			for _, callback := range s.txCallbacks {
+	//				callback.Call(call)
+	//			}
+	//		}
+	//	}
+	//}()
 	//go func() {
 	//	for {
 	//
