@@ -58,11 +58,11 @@ func (tun *Tun) Send(data []byte) error {
 }
 
 func (tun *Tun) up() error {
-	_, err := util.RunCommand(fmt.Sprintf("sudo ip link set dev %s mtu %d", tun.name, tun.mtu))
-	if err != nil {
-		return err
-	}
-	_, err = util.RunCommand(fmt.Sprintf("sudo ip addr add %s/%d dev %s", tun.ip, tun.cidr, tun.name))
+	//_, err := util.RunCommand(fmt.Sprintf("sudo ip link set dev %s mtu %d", tun.name, tun.mtu))
+	//if err != nil {
+	//	return err
+	//}
+	_, err := util.RunCommand(fmt.Sprintf("sudo ip addr add %s/%d dev %s", tun.ip, tun.cidr, tun.name))
 	if err != nil {
 		return err
 	}

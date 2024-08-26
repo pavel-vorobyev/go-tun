@@ -24,8 +24,8 @@ type Server struct {
 	txModifiers         []packet.Modifier
 	rxCallbacks         []packet.Callback
 	txCallbacks         []packet.Callback
-	rxCallbackCallQueue *util.ConcurrentQueue[packet.CallbackCall]
-	txCallbackCallQueue *util.ConcurrentQueue[packet.CallbackCall]
+	rxCallbackCallQueue *util.Queue[packet.CallbackCall]
+	txCallbackCallQueue *util.Queue[packet.CallbackCall]
 }
 
 func CreateServer(options *Options) (*Server, error) {
@@ -69,8 +69,8 @@ func CreateServer(options *Options) (*Server, error) {
 		txModifiers:         options.txModifiers,
 		rxCallbacks:         options.rxCallbacks,
 		txCallbacks:         options.txCallbacks,
-		rxCallbackCallQueue: &util.ConcurrentQueue[packet.CallbackCall]{},
-		txCallbackCallQueue: &util.ConcurrentQueue[packet.CallbackCall]{},
+		rxCallbackCallQueue: &util.Queue[packet.CallbackCall]{},
+		txCallbackCallQueue: &util.Queue[packet.CallbackCall]{},
 	}, nil
 }
 
@@ -142,33 +142,6 @@ func (s *Server) callCallbacks() {
 			}
 		}
 	}()
-	//go func() {
-	//	for {
-	//
-	//	}
-	//}()
-	//if len(s.rxCallbacks) != 0 {
-	//	go func() {
-	//		for {
-	//			if call := s.rxCallbackCallQueue.Pop(); call != nil {
-	//				for _, callback := range s.rxCallbacks {
-	//					callback.Call(call)
-	//				}
-	//			}
-	//		}
-	//	}()
-	//}
-	//if len(s.txCallbacks) != 0 {
-	//	go func() {
-	//		for {
-	//			if call := s.txCallbackCallQueue.Pop(); call != nil {
-	//				for _, callback := range s.txCallbacks {
-	//					callback.Call(call)
-	//				}
-	//			}
-	//		}
-	//	}()
-	//}
 }
 
 func (s *Server) storeCAddr(ptc string, src string, dst string, cAddr string) {
