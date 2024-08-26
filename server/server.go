@@ -8,24 +8,21 @@ import (
 	"go-tun/server/config"
 	"go-tun/server/packet"
 	"go-tun/server/storage/address"
-	"go-tun/util"
 	"log"
 	"os"
 	"runtime"
 )
 
 type Server struct {
-	conf                config.Config
-	tun                 *network.Tun
-	conn                *transport.UDPConn
-	cAddrKeyFactory     address.CAddrKeyFactory
-	cAddrStore          address.CAddrStore
-	rxModifiers         []packet.Modifier
-	txModifiers         []packet.Modifier
-	rxCallbacks         []packet.Callback
-	txCallbacks         []packet.Callback
-	rxCallbackCallQueue *util.Queue[packet.CallbackCall]
-	txCallbackCallQueue *util.Queue[packet.CallbackCall]
+	conf            config.Config
+	tun             *network.Tun
+	conn            *transport.UDPConn
+	cAddrKeyFactory address.CAddrKeyFactory
+	cAddrStore      address.CAddrStore
+	rxModifiers     []packet.Modifier
+	txModifiers     []packet.Modifier
+	rxCallbacks     []packet.Callback
+	txCallbacks     []packet.Callback
 }
 
 func CreateServer(options *Options) (*Server, error) {
@@ -61,23 +58,20 @@ func CreateServer(options *Options) (*Server, error) {
 	log.Println(fmt.Sprintf("PID: %d", os.Getpid()))
 
 	return &Server{
-		tun:                 tun,
-		conn:                conn,
-		cAddrKeyFactory:     options.cAddrKeyFactory,
-		cAddrStore:          options.cAddrStore,
-		rxModifiers:         options.rxModifiers,
-		txModifiers:         options.txModifiers,
-		rxCallbacks:         options.rxCallbacks,
-		txCallbacks:         options.txCallbacks,
-		rxCallbackCallQueue: &util.Queue[packet.CallbackCall]{},
-		txCallbackCallQueue: &util.Queue[packet.CallbackCall]{},
+		tun:             tun,
+		conn:            conn,
+		cAddrKeyFactory: options.cAddrKeyFactory,
+		cAddrStore:      options.cAddrStore,
+		rxModifiers:     options.rxModifiers,
+		txModifiers:     options.txModifiers,
+		rxCallbacks:     options.rxCallbacks,
+		txCallbacks:     options.txCallbacks,
 	}, nil
 }
 
 func (s *Server) Start() {
 	s.listenConn()
 	s.listenTun()
-	//s.callCallbacks()
 }
 
 func (s *Server) listenConn() {
@@ -87,25 +81,7 @@ func (s *Server) listenConn() {
 			if err != nil {
 				continue
 			}
-
-			ptc, src, dst, err := header.GetBase(data.Data)
-			if err != nil {
-				continue
-			}
-
-			s.storeCAddr(ptc, src, dst, data.CAddr)
-			_ = s.tun.Send(data.Data)
-
-			for _, callback := range s.rxCallbacks {
-				callback.Call(&packet.CallbackCall{
-					Ptc: ptc,
-					Src: src,
-					Dst: dst,
-					N:   n,
-				})
-			}
-
-			//s.addRxCallbackCall(ptc, src, dst, n)
+			s.handleConnPacket(n, data)
 		}
 	}()
 }
@@ -117,49 +93,42 @@ func (s *Server) listenTun() {
 			if err != nil {
 				continue
 			}
-
-			ptc, src, dst, err := header.GetBase(data)
-			if err != nil {
-				continue
-			}
-
-			cAddr := s.getCAddr(ptc, src, dst)
-			_ = s.conn.Send(&transport.Data{
-				Data:  data,
-				CAddr: cAddr,
-			})
-
-			for _, callback := range s.txCallbacks {
-				callback.Call(&packet.CallbackCall{
-					Ptc: ptc,
-					Src: src,
-					Dst: dst,
-					N:   n,
-				})
-			}
-
-			//s.addTxCallbackCall(ptc, src, dst, n)
+			s.handleTunPacket(n, data)
 		}
 	}()
 }
 
-func (s *Server) callCallbacks() {
-	go func() {
-		for {
-			call := s.rxCallbackCallQueue.Pop()
-			if call != nil {
-				for _, callback := range s.rxCallbacks {
-					callback.Call(call)
-				}
-			}
-			call = s.txCallbackCallQueue.Pop()
-			if call != nil {
-				for _, callback := range s.txCallbacks {
-					callback.Call(call)
-				}
-			}
-		}
-	}()
+func (s *Server) handleConnPacket(n int, data *transport.Data) {
+	ptc, src, dst, err := header.GetBase(data.Data)
+	if err != nil {
+		return
+	}
+
+	s.storeCAddr(ptc, src, dst, data.CAddr)
+	err = s.tun.Send(data.Data)
+	if err != nil {
+		return
+	}
+
+	s.callCallbacks(ptc, src, dst, n, s.rxCallbacks)
+}
+
+func (s *Server) handleTunPacket(n int, data []byte) {
+	ptc, src, dst, err := header.GetBase(data)
+	if err != nil {
+		return
+	}
+
+	cAddr := s.getCAddr(ptc, src, dst)
+	err = s.conn.Send(&transport.Data{
+		Data:  data,
+		CAddr: cAddr,
+	})
+	if err != nil {
+		return
+	}
+
+	s.callCallbacks(ptc, src, dst, n, s.txCallbacks)
 }
 
 func (s *Server) storeCAddr(ptc string, src string, dst string, cAddr string) {
@@ -172,28 +141,8 @@ func (s *Server) getCAddr(ptc string, src string, dst string) string {
 	return s.cAddrStore.Get(key)
 }
 
-func (s *Server) addRxCallbackCall(ptc string, src string, dst string, n int) {
-	if len(s.rxCallbacks) != 0 {
-		s.rxCallbackCallQueue.Put(
-			&packet.CallbackCall{
-				Ptc: ptc,
-				Src: src,
-				Dst: dst,
-				N:   n,
-			},
-		)
-	}
-}
-
-func (s *Server) addTxCallbackCall(ptc string, src string, dst string, n int) {
-	if len(s.txCallbacks) != 0 {
-		s.txCallbackCallQueue.Put(
-			&packet.CallbackCall{
-				Ptc: ptc,
-				Src: src,
-				Dst: dst,
-				N:   n,
-			},
-		)
+func (s *Server) callCallbacks(ptc string, src string, dst string, n int, c []packet.Callback) {
+	for _, callback := range c {
+		callback.Call(ptc, src, dst, n)
 	}
 }

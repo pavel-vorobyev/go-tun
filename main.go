@@ -12,8 +12,8 @@ var txTc = &packet.TrafficCallback{}
 
 func main() {
 	defer func() {
-		log.Println(rxTc.T)
-		log.Println(txTc.T)
+		log.Println(rxTc.T / 1000000)
+		log.Println(txTc.T / 1000000)
 	}()
 
 	options := server.CreateOptions()

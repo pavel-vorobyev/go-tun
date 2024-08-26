@@ -1,20 +1,13 @@
 package packet
 
 type Callback interface {
-	Call(call *CallbackCall)
-}
-
-type CallbackCall struct {
-	Ptc string
-	Src string
-	Dst string
-	N   int
+	Call(Ptc string, Src string, Dst string, N int)
 }
 
 type TrafficCallback struct {
 	T int
 }
 
-func (c *TrafficCallback) Call(args *CallbackCall) {
-	c.T = c.T + args.N
+func (c *TrafficCallback) Call(_ string, _ string, _ string, N int) {
+	c.T = c.T + N
 }
