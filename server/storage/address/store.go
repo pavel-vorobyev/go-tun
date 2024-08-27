@@ -1,6 +1,8 @@
 package address
 
 import (
+	"fmt"
+	"log"
 	"sync"
 )
 
@@ -31,4 +33,14 @@ func (s *DefaultCAddrStore) Set(key string, value string) {
 	s.rwMutex.Lock()
 	s.storage[key] = value
 	s.rwMutex.Unlock()
+}
+
+func (s *DefaultCAddrStore) Summary() {
+	count := 0
+
+	for k, v := range s.storage {
+		log.Println(fmt.Sprintf("%s : %s", k, v))
+		count++
+	}
+	log.Println(fmt.Sprintf("Total: %d", count))
 }
