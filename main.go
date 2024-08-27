@@ -6,6 +6,7 @@ import (
 	"go-tun/server/storage/address"
 	"go-tun/util"
 	"log"
+	"os"
 )
 
 var rxTc = &packet.TrafficCallback{}
@@ -13,6 +14,12 @@ var txTc = &packet.TrafficCallback{}
 var cAddrStore = address.NewDefaultCAddrStore()
 
 func main() {
+	startServer()
+}
+
+func startServer() {
+	os.MkdirAll(".tmp", 0777)
+
 	defer func() {
 		log.Println(rxTc.T / 1024 / 1024)
 		log.Println(txTc.T / 1024 / 1024)
