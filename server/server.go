@@ -110,7 +110,7 @@ func (s *Server) handleConnPacket(n int, data *transport.Data) {
 		return
 	}
 
-	s.callCallbacks(ptc, src, dst, n, s.rxCallbacks)
+	//s.callCallbacks(ptc, src, dst, n, s.rxCallbacks)
 }
 
 func (s *Server) handleTunPacket(n int, data []byte) {
@@ -128,7 +128,7 @@ func (s *Server) handleTunPacket(n int, data []byte) {
 		return
 	}
 
-	s.callCallbacks(ptc, src, dst, n, s.txCallbacks)
+	//s.callCallbacks(ptc, src, dst, n, s.txCallbacks)
 }
 
 func (s *Server) storeCAddr(ptc string, src string, dst string, cAddr string) {
