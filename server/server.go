@@ -106,7 +106,7 @@ func (s *Server) handleConnPacket(n int, data *transport.Data) {
 		return
 	}
 
-	//s.storeCAddr(ptc, src, dst, data.CAddr)
+	s.storeCAddr(ptc, src, dst, data.CAddr)
 	err = s.tun.Send(data.Data)
 	if err != nil {
 		return
