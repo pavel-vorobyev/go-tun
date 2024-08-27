@@ -4,6 +4,7 @@ import (
 	"go-tun/server"
 	"go-tun/server/packet"
 	"go-tun/server/storage/address"
+	"go-tun/util"
 	"log"
 )
 
@@ -29,9 +30,5 @@ func main() {
 	}
 	s.Start()
 
-	for {
-
-	}
-
-	// util.Serve()
+	util.Serve()
 }
