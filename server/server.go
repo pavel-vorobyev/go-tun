@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"github.com/xitongsys/ethernet-go/header"
 	"go-tun/core/network"
 	"go-tun/core/transport"
 	"go-tun/server/config"
@@ -12,6 +11,8 @@ import (
 	"os"
 	"runtime"
 )
+
+var cAddr = "91.202.27.121:60796"
 
 type Server struct {
 	conf            config.Config
@@ -99,13 +100,13 @@ func (s *Server) listenTun() {
 }
 
 func (s *Server) handleConnPacket(n int, data *transport.Data) {
-	ptc, src, dst, err := header.GetBase(data.Data)
-	if err != nil {
-		return
-	}
+	//ptc, src, dst, err := header.GetBase(data.Data)
+	//if err != nil {
+	//	return
+	//}
 
-	s.storeCAddr(ptc, src, dst, data.CAddr)
-	err = s.tun.Send(data.Data)
+	//s.storeCAddr(ptc, src, dst, data.CAddr)
+	err := s.tun.Send(data.Data)
 	if err != nil {
 		return
 	}
@@ -113,14 +114,17 @@ func (s *Server) handleConnPacket(n int, data *transport.Data) {
 	//s.callCallbacks(ptc, src, dst, n, s.rxCallbacks)
 }
 
-func (s *Server) handleTunPacket(n int, data []byte) {
-	ptc, src, dst, err := header.GetBase(data)
-	if err != nil {
-		return
-	}
+// 91.202.27.121:60796
+// 91.202.27.121:60796
 
-	cAddr := s.getCAddr(ptc, src, dst)
-	err = s.conn.Send(&transport.Data{
+func (s *Server) handleTunPacket(n int, data []byte) {
+	//ptc, src, dst, err := header.GetBase(data)
+	//if err != nil {
+	//	return
+	//}
+
+	//cAddr := s.getCAddr(ptc, src, dst)
+	err := s.conn.Send(&transport.Data{
 		Data:  data,
 		CAddr: cAddr,
 	})
