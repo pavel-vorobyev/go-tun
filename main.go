@@ -10,7 +10,7 @@ import (
 
 var rxTc = &packet.TrafficCallback{}
 var txTc = &packet.TrafficCallback{}
-var cAddrStore = &address.DefaultCAddrStore{}
+var cAddrStore = address.NewDefaultCAddrStore()
 
 func main() {
 	defer func() {
