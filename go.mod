@@ -8,4 +8,7 @@ require (
 	github.com/xitongsys/ethernet-go v0.0.0-20190909031926-c050ee4cc5ac
 )
 
-require golang.org/x/sys v0.24.0 // indirect
+require (
+	github.com/mbndr/figlet4go v0.0.0-20190224160619-d6cef5b186ea // indirect
+	golang.org/x/sys v0.24.0 // indirect
+)

@@ -2,32 +2,27 @@ package server
 
 import (
 	"fmt"
-	"github.com/xitongsys/ethernet-go/header"
 	"go-tun/core/network"
 	"go-tun/core/transport"
 	"go-tun/server/config"
-	"go-tun/server/packet"
-	"go-tun/server/storage/address"
-	"log"
+	"go-tun/server/storage"
+	"go-tun/util"
 	"os"
 	"runtime"
 )
 
-//var cAddr = "91.202.27.121:60796"
-
 type Server struct {
-	conf            config.Config
-	tun             *network.Tun
-	conn            *transport.UDPConn
-	cAddrKeyFactory address.CAddrKeyFactory
-	cAddrStore      address.CAddrStore
-	rxModifiers     []packet.Modifier
-	txModifiers     []packet.Modifier
-	rxCallbacks     []packet.Callback
-	txCallbacks     []packet.Callback
+	conf        config.Config
+	tun         *network.Tun
+	conn        *transport.UDPConn
+	cAddrStore  *storage.CAddrStore
+	rxModifiers []PacketModifier
+	txModifiers []PacketModifier
+	rxCallbacks []PacketCallback
+	txCallbacks []PacketCallback
 }
 
-func CreateServer(options *Options) (*Server, error) {
+func NewServer(options *Options) (*Server, error) {
 	conf, err := options.configProvider.GetConfig()
 	if err != nil {
 		return nil, err
@@ -45,33 +40,30 @@ func CreateServer(options *Options) (*Server, error) {
 		Mtu:  conf.Mtu,
 	}
 
-	tun, err := network.CreateTun(tunConf)
+	tun, err := network.NewTun(tunConf)
+	if err != nil {
+		return nil, err
+	}
+	conn, err := transport.NewConn(connConf)
 	if err != nil {
 		return nil, err
 	}
 
-	conn, err := transport.CreateConn(connConf)
-	if err != nil {
-		return nil, err
-	}
-
-	log.Println("Server is ready")
-	log.Println(fmt.Sprintf("CPUs num: %d", runtime.NumCPU()))
-	log.Println(fmt.Sprintf("PID: %d", os.Getpid()))
+	cAddStore := storage.NewCAddrStore()
 
 	return &Server{
-		tun:             tun,
-		conn:            conn,
-		cAddrKeyFactory: options.cAddrKeyFactory,
-		cAddrStore:      options.cAddrStore,
-		rxModifiers:     options.rxModifiers,
-		txModifiers:     options.txModifiers,
-		rxCallbacks:     options.rxCallbacks,
-		txCallbacks:     options.txCallbacks,
+		tun:         tun,
+		conn:        conn,
+		cAddrStore:  cAddStore,
+		rxModifiers: options.rxModifiers,
+		txModifiers: options.txModifiers,
+		rxCallbacks: options.rxCallbacks,
+		txCallbacks: options.txCallbacks,
 	}, nil
 }
 
 func (s *Server) Start() {
+	s.printMessages()
 	s.listenConn()
 	s.listenTun()
 }
@@ -101,13 +93,15 @@ func (s *Server) listenTun() {
 }
 
 func (s *Server) handleConnPacket(n int, data *transport.Data) {
-	ptc, src, dst, err := header.GetBase(data.Data)
+	dMod, err := s.callModifiers(data.GetData(), s.rxModifiers)
 	if err != nil {
 		return
 	}
 
-	s.storeCAddr(ptc, src, dst, data.CAddr)
-	err = s.tun.Send(data.Data)
+	ptc, src, dst := util.GetPacketBaseInfo(dMod)
+	s.cAddrStore.Set(src, data.GetCAddr())
+
+	err = s.tun.Send(dMod)
 	if err != nil {
 		return
 	}
@@ -115,20 +109,16 @@ func (s *Server) handleConnPacket(n int, data *transport.Data) {
 	s.callCallbacks(ptc, src, dst, n, s.rxCallbacks)
 }
 
-// 91.202.27.121:60796
-// 91.202.27.121:60796
-
 func (s *Server) handleTunPacket(n int, data []byte) {
-	ptc, src, dst, err := header.GetBase(data)
+	dMod, err := s.callModifiers(data, s.txModifiers)
 	if err != nil {
 		return
 	}
 
-	cAddr := s.getCAddr(ptc, src, dst)
-	err = s.conn.Send(&transport.Data{
-		Data:  data,
-		CAddr: cAddr,
-	})
+	ptc, src, dst := util.GetPacketBaseInfo(data)
+	cAddr := s.cAddrStore.Get(dst)
+
+	err = s.conn.Send(transport.NewData(dMod, cAddr))
 	if err != nil {
 		return
 	}
@@ -136,18 +126,33 @@ func (s *Server) handleTunPacket(n int, data []byte) {
 	s.callCallbacks(ptc, src, dst, n, s.txCallbacks)
 }
 
-func (s *Server) storeCAddr(ptc string, src string, dst string, cAddr string) {
-	key := s.cAddrKeyFactory.Get(ptc, src, dst)
-	s.cAddrStore.Set(key, cAddr)
+func (s *Server) callModifiers(data []byte, m []PacketModifier) ([]byte, error) {
+	dMod := data
+	for _, modifier := range m {
+		res, err := modifier.Process(data)
+		if err != nil {
+			return nil, err
+		}
+		dMod = res
+	}
+	return dMod, nil
 }
 
-func (s *Server) getCAddr(ptc string, src string, dst string) string {
-	key := s.cAddrKeyFactory.Get(ptc, dst, src)
-	return s.cAddrStore.Get(key)
-}
-
-func (s *Server) callCallbacks(ptc string, src string, dst string, n int, c []packet.Callback) {
+func (s *Server) callCallbacks(ptc int, src string, dst string, n int, c []PacketCallback) {
 	for _, callback := range c {
 		callback.Call(ptc, src, dst, n)
 	}
+}
+
+func (s *Server) printMessages() {
+	if runtime.NumCPU() < 2 {
+		util.PrintWarning(
+			"\nThis instance running on 1 CPU core.\n" +
+				"A minimum of 2 CPU cores is recommended for best performance.\n" +
+				"Niddle will run on 1 CPU core anyway, but significantly slower.",
+		)
+	}
+	util.PrintHelloNidde()
+	util.PrintMessage("Niddle successfully started")
+	util.PrintMessage(fmt.Sprintf("PID: %d", os.Getpid()))
 }

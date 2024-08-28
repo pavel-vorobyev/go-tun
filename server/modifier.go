@@ -1,5 +1,5 @@
-package packet
+package server
 
-type Modifier interface {
-	Process(ptc string, src string, dst string, data []byte) ([]byte, error)
+type PacketModifier interface {
+	Process(data []byte) ([]byte, error)
 }

@@ -13,7 +13,7 @@ type UDPConn struct {
 	readPacket []byte
 }
 
-func CreateConn(c *Config) (*UDPConn, error) {
+func NewConn(c *Config) (*UDPConn, error) {
 	addr, err := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", c.Ip, c.Port))
 	if err != nil {
 		return nil, err
@@ -38,18 +38,15 @@ func (conn *UDPConn) Receive() (int, *Data, error) {
 	if err != nil {
 		return 0, nil, fmt.Errorf("failed to read from udp: %s", err)
 	}
-	return n, &Data{
-		Data:  conn.readPacket[:n],
-		CAddr: addr.String(),
-	}, nil
+	return n, NewData(conn.readPacket[:n], addr.String()), nil
 }
 
 func (conn *UDPConn) Send(data *Data) error {
-	addr, err := net.ResolveUDPAddr("udp", data.CAddr)
+	addr, err := net.ResolveUDPAddr("udp", data.GetCAddr())
 	if err != nil {
 		return fmt.Errorf("failed to resolove udp addr: %s", err)
 	}
-	_, err = conn.conn.WriteToUDP(data.Data, addr)
+	_, err = conn.conn.WriteToUDP(data.GetData(), addr)
 	if err != nil {
 		return fmt.Errorf("failed to write udp: %s", err)
 	}

@@ -14,12 +14,11 @@ const (
 )
 
 type Interface struct {
-	Mtu  int
 	Name string
 	fd   *os.File
 }
 
-func NewInterface(name string, mtu int) (*Interface, error) {
+func NewInterface(name string) (*Interface, error) {
 	fd, err := os.OpenFile("/dev/net/tun", os.O_RDWR, 0)
 	if err != nil {
 		return nil, err
@@ -41,7 +40,6 @@ func NewInterface(name string, mtu int) (*Interface, error) {
 	}
 
 	return &Interface{
-		Mtu:  mtu,
 		Name: name,
 		fd:   fd,
 	}, nil
@@ -57,8 +55,4 @@ func (t *Interface) Write(data []byte) (int, error) {
 
 func (t *Interface) Close() error {
 	return t.fd.Close()
-}
-
-func (t *Interface) GetMtu() int {
-	return t.Mtu
 }

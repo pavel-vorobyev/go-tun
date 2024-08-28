@@ -2,6 +2,7 @@ package network
 
 import (
 	"fmt"
+	"github.com/songgao/water"
 	"go-tun/util"
 )
 
@@ -10,17 +11,19 @@ type Tun struct {
 	ip         string
 	cidr       int
 	mtu        int
-	iface      *Interface
-	in         chan []byte
-	out        chan []byte
+	iface      *water.Interface
 	readPacket []byte
 }
 
-func CreateTun(c *Config) (*Tun, error) {
-	iface, err := NewInterface(c.Name, c.Mtu)
-	if err != nil {
-		return nil, err
-	}
+func NewTun(c *Config) (*Tun, error) {
+	//iface, err := NewInterface(c.Name)
+	//if err != nil {
+	//	return nil, error
+	//}
+
+	iface, err := water.New(water.Config{
+		DeviceType: water.TUN,
+	})
 
 	tun := &Tun{
 		name:       c.Name,
@@ -28,12 +31,10 @@ func CreateTun(c *Config) (*Tun, error) {
 		cidr:       c.Cidr,
 		mtu:        c.Mtu,
 		iface:      iface,
-		in:         make(chan []byte),
-		out:        make(chan []byte),
 		readPacket: make([]byte, c.Mtu*2),
 	}
 
-	err = tun.up()
+	//err = tun.up()
 	if err != nil {
 		return nil, err
 	}

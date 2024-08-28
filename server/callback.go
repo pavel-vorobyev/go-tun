@@ -1,13 +1,13 @@
-package packet
+package server
 
-type Callback interface {
+type PacketCallback interface {
 	Call(Ptc int, Src string, Dst string, N int)
 }
 
-type TrafficCallback struct {
+type TrafficPacketCallback struct {
 	T int
 }
 
-func (c *TrafficCallback) Call(_ int, _ string, _ string, N int) {
+func (c *TrafficPacketCallback) Call(_ int, _ string, _ string, N int) {
 	c.T = c.T + N
 }
