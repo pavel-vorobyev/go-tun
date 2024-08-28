@@ -34,7 +34,7 @@ func NewTun(c *Config) (*Tun, error) {
 		readPacket: make([]byte, c.Mtu*2),
 	}
 
-	//err = tun.up()
+	err = tun.up()
 	if err != nil {
 		return nil, err
 	}
