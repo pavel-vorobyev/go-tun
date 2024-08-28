@@ -1,6 +1,6 @@
 {
   "RemoteIp": "0.0.0.0",
-  "RemotePort": 8933,
+  "RemotePort": 5995,
   "TunName": "tun0",
   "TunIp": "10.8.0.1",
   "TunCidr": 24,
