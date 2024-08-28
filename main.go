@@ -6,6 +6,8 @@ import (
 	"log"
 )
 
+var ser *server.Server
+
 var rxTc = &server.TrafficPacketCallback{}
 var txTc = &server.TrafficPacketCallback{}
 
@@ -17,6 +19,7 @@ func startServer() {
 	defer func() {
 		log.Println(rxTc.T / 1024 / 1024)
 		log.Println(txTc.T / 1024 / 1024)
+		ser.Sum()
 	}()
 
 	options := server.NewOptions()
@@ -24,6 +27,7 @@ func startServer() {
 	options.AddTxCallback(txTc)
 
 	s, err := server.NewServer(options)
+	ser = s
 	if err != nil {
 		log.Fatalln(err)
 	}

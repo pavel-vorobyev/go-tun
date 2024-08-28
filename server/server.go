@@ -93,15 +93,15 @@ func (s *Server) listenTun() {
 }
 
 func (s *Server) handleConnPacket(n int, data *transport.Data) {
-	dMod, err := s.callModifiers(data.GetData(), s.rxModifiers)
-	if err != nil {
-		return
-	}
+	//dMod, err := s.callModifiers(data.GetData(), s.rxModifiers)
+	//if err != nil {
+	//	return
+	//}
 
-	ptc, src, dst := util.GetPacketBaseInfo(dMod)
+	ptc, src, dst := util.GetPacketBaseInfo(data.GetData())
 	s.cAddrStore.Set(src, data.GetCAddr())
 
-	err = s.tun.Send(dMod)
+	err := s.tun.Send(data.GetData())
 	if err != nil {
 		return
 	}
@@ -110,15 +110,15 @@ func (s *Server) handleConnPacket(n int, data *transport.Data) {
 }
 
 func (s *Server) handleTunPacket(n int, data []byte) {
-	dMod, err := s.callModifiers(data, s.txModifiers)
-	if err != nil {
-		return
-	}
+	//dMod, err := s.callModifiers(data, s.txModifiers)
+	//if err != nil {
+	//	return
+	//}
 
-	ptc, src, dst := util.GetPacketBaseInfo(dMod)
+	ptc, src, dst := util.GetPacketBaseInfo(data)
 	cAddr := s.cAddrStore.Get(dst)
 
-	err = s.conn.Send(transport.NewData(dMod, cAddr))
+	err := s.conn.Send(transport.NewData(data, cAddr))
 	if err != nil {
 		return
 	}
@@ -142,6 +142,10 @@ func (s *Server) callCallbacks(ptc int, src string, dst string, n int, c []Packe
 	for _, callback := range c {
 		callback.Call(ptc, src, dst, n)
 	}
+}
+
+func (s *Server) Sum() {
+	s.cAddrStore.Summary()
 }
 
 func (s *Server) printMessages() {
