@@ -101,6 +101,10 @@ func (s *Server) handleConnPacket(n int, data *transport.Data) {
 	ptc, src, dst := util.GetPacketBaseInfo(data.GetData())
 	s.cAddrStore.Set(src, data.GetCAddr())
 
+	if ptc != 6 && ptc != 17 {
+		return
+	}
+
 	err := s.tun.Send(data.GetData())
 	if err != nil {
 		return
@@ -117,6 +121,10 @@ func (s *Server) handleTunPacket(n int, data []byte) {
 
 	ptc, src, dst := util.GetPacketBaseInfo(data)
 	cAddr := s.cAddrStore.Get(dst)
+
+	if ptc != 6 && ptc != 17 {
+		return
+	}
 
 	err := s.conn.Send(transport.NewData(data, cAddr))
 	if err != nil {
