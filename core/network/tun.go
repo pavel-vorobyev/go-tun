@@ -58,7 +58,7 @@ func (tun *Tun) up() error {
 	if err != nil {
 		return err
 	}
-	_, err := util.RunCommand(fmt.Sprintf("sudo ip addr add %s/%d dev %s", tun.ip, tun.cidr, tun.name))
+	_, err = util.RunCommand(fmt.Sprintf("sudo ip addr add %s/%d dev %s", tun.ip, tun.cidr, tun.name))
 	if err != nil {
 		return err
 	}
