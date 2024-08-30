@@ -98,8 +98,12 @@ func (s *Server) handleConnPacket(n int, data *transport.Data) {
 	//	return
 	//}
 
+	if addr == "" {
+		addr = data.GetCAddr()
+	}
+
 	ptc, src, dst := util.GetPacketBaseInfo(data.GetData())
-	s.cAddrStore.Set(src, data.GetCAddr())
+	//s.cAddrStore.Set(src, data.GetCAddr())
 
 	if ptc != 6 && ptc != 17 {
 		return
@@ -119,14 +123,18 @@ func (s *Server) handleTunPacket(n int, data []byte) {
 	//	return
 	//}
 
+	if addr == "" {
+		return
+	}
+
 	ptc, src, dst := util.GetPacketBaseInfo(data)
-	cAddr := s.cAddrStore.Get(dst)
+	//cAddr := s.cAddrStore.Get(dst)
 
 	if ptc != 6 && ptc != 17 {
 		return
 	}
 
-	err := s.conn.Send(transport.NewData(data, cAddr))
+	err := s.conn.Send(transport.NewData(data, addr))
 	if err != nil {
 		return
 	}
@@ -155,6 +163,8 @@ func (s *Server) callCallbacks(ptc int, src string, dst string, n int, c []Packe
 func (s *Server) Sum() {
 	s.cAddrStore.Summary()
 }
+
+var addr string
 
 func (s *Server) printMessages() {
 	if runtime.NumCPU() < 2 {
