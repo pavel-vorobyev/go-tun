@@ -71,11 +71,11 @@ func (s *Server) Start() {
 func (s *Server) listenConn() {
 	go func() {
 		for {
-			n, data, err := s.conn.Receive()
+			n, data, cAddr, err := s.conn.Receive()
 			if err != nil {
 				continue
 			}
-			s.handleConnPacket(n, data)
+			s.handleConnPacket(n, data, cAddr)
 		}
 	}()
 }
@@ -92,20 +92,20 @@ func (s *Server) listenTun() {
 	}()
 }
 
-func (s *Server) handleConnPacket(n int, data *transport.Data) {
+func (s *Server) handleConnPacket(n int, data []byte, cAddr string) {
 	//dMod, err := s.callModifiers(data.GetData(), s.rxModifiers)
 	//if err != nil {
 	//	return
 	//}
 
-	ptc, src, dst := util.GetPacketBaseInfo(data.GetData())
-	s.cAddrStore.Set(src, data.GetCAddr())
+	ptc, src, dst := util.GetPacketBaseInfo(data)
+	s.cAddrStore.Set(src, cAddr)
 
 	if ptc != 6 && ptc != 17 {
 		return
 	}
 
-	err := s.tun.Send(data.GetData())
+	err := s.tun.Send(data)
 	if err != nil {
 		return
 	}
@@ -126,7 +126,7 @@ func (s *Server) handleTunPacket(n int, data []byte) {
 		return
 	}
 
-	err := s.conn.Send(transport.NewData(data, cAddr))
+	err := s.conn.Send(data, cAddr)
 	if err != nil {
 		return
 	}
