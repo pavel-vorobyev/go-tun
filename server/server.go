@@ -98,7 +98,7 @@ func (s *Server) handleConnPacket(n int, data []byte, cAddr string) {
 	//	return
 	//}
 
-	ptc, src, dst := util.GetPacketBaseInfo(data)
+	ptc, src, dst := util.GetPacketBaseInfo(data, n)
 	s.cAddrStore.Set(src, cAddr)
 
 	if ptc != 6 && ptc != 17 {
@@ -119,7 +119,7 @@ func (s *Server) handleTunPacket(n int, data []byte) {
 	//	return
 	//}
 
-	ptc, src, dst := util.GetPacketBaseInfo(data)
+	ptc, src, dst := util.GetPacketBaseInfo(data, n)
 	cAddr := s.cAddrStore.Get(dst)
 
 	if ptc != 6 && ptc != 17 {
