@@ -26,12 +26,12 @@ func RunCommand(command string) (string, error) {
 	return stdout.String(), err
 }
 
-func PrintHelloNidde() {
+func PrintHelloKiesp() {
 	greenColor, _ := figlet4go.NewTrueColorFromHexString("32DE84")
 	options := figlet4go.NewRenderOptions()
 	options.FontColor = []figlet4go.Color{greenColor}
 	renderer := figlet4go.NewAsciiRender()
-	renderStr, _ := renderer.RenderOpts("Hello, Niddle!", options)
+	renderStr, _ := renderer.RenderOpts("Hello, Kiesp!", options)
 	log.Println("\n" + renderStr)
 }
 

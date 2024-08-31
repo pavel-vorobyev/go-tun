@@ -8,7 +8,6 @@ import (
 	"go-tun/server/storage"
 	"go-tun/util"
 	"os"
-	"runtime"
 )
 
 type Server struct {
@@ -98,14 +97,14 @@ func (s *Server) handleConnPacket(n int, data []byte, cAddr string) {
 	//	return
 	//}
 
-	ptc, src, dst := util.GetPacketBaseInfo(data, n)
-	s.cAddrStore.Set(src, cAddr)
-
-	if ptc != 6 && ptc != 17 {
+	ptc, src, dst, err := util.GetPacketBaseInfo(data, n)
+	if err != nil {
 		return
 	}
 
-	err := s.tun.Send(data)
+	s.cAddrStore.Set(src, cAddr)
+
+	err = s.tun.Send(data)
 	if err != nil {
 		return
 	}
@@ -119,14 +118,13 @@ func (s *Server) handleTunPacket(n int, data []byte) {
 	//	return
 	//}
 
-	ptc, src, dst := util.GetPacketBaseInfo(data, n)
-	cAddr := s.cAddrStore.Get(dst)
-
-	if ptc != 6 && ptc != 17 {
+	ptc, src, dst, err := util.GetPacketBaseInfo(data, n)
+	if err != nil {
 		return
 	}
 
-	err := s.conn.Send(data, cAddr)
+	cAddr := s.cAddrStore.Get(dst)
+	err = s.conn.Send(data, cAddr)
 	if err != nil {
 		return
 	}
@@ -157,14 +155,7 @@ func (s *Server) Sum() {
 }
 
 func (s *Server) printMessages() {
-	if runtime.NumCPU() < 2 {
-		util.PrintWarning(
-			"\nThis instance running on 1 CPU core.\n" +
-				"A minimum of 2 CPU cores is recommended for best performance.\n" +
-				"Niddle will run on 1 CPU core anyway, but significantly slower.",
-		)
-	}
-	util.PrintHelloNidde()
-	util.PrintMessage("Niddle successfully started")
+	util.PrintHelloKiesp()
+	util.PrintMessage("Server successfully started")
 	util.PrintMessage(fmt.Sprintf("PID: %d", os.Getpid()))
 }

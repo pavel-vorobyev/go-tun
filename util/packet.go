@@ -9,9 +9,11 @@ const (
 	ProtoTcp = 17
 )
 
-func GetPacketBaseInfo(d []byte, l int) (int, string, string) {
-	//log.Println(l)
-	return GetPacketProtocol(d), GetPacketSrc(d), GetPacketDst(d)
+func GetPacketBaseInfo(d []byte, n int) (int, string, string, error) {
+	if n < 20 {
+		return 0, "", "", fmt.Errorf("too short")
+	}
+	return GetPacketProtocol(d), GetPacketSrc(d), GetPacketDst(d), nil
 }
 
 func GetPacketProtocol(d []byte) int {
