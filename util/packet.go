@@ -2,7 +2,6 @@ package util
 
 import (
 	"fmt"
-	"log"
 )
 
 const (
@@ -11,7 +10,7 @@ const (
 )
 
 func GetPacketBaseInfo(d []byte, l int) (int, string, string) {
-	log.Println(l)
+	//log.Println(l)
 	return GetPacketProtocol(d), GetPacketSrc(d), GetPacketDst(d)
 }
 
