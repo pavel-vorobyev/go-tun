@@ -92,19 +92,19 @@ func (s *Server) listenTun() {
 }
 
 func (s *Server) handleConnPacket(n int, data []byte, cAddr string) {
-	//dMod, err := s.callModifiers(data.GetData(), s.rxModifiers)
-	//if err != nil {
-	//	return
-	//}
+	dMod, err := s.callModifiers(data, s.rxModifiers)
+	if err != nil {
+		return
+	}
 
-	ptc, src, dst, err := util.GetPacketBaseInfo(data, n)
+	ptc, src, dst, err := util.GetPacketBaseInfo(dMod, n)
 	if err != nil {
 		return
 	}
 
 	s.cAddrStore.Set(src, cAddr)
 
-	err = s.tun.Send(data)
+	err = s.tun.Send(dMod)
 	if err != nil {
 		return
 	}
@@ -113,18 +113,18 @@ func (s *Server) handleConnPacket(n int, data []byte, cAddr string) {
 }
 
 func (s *Server) handleTunPacket(n int, data []byte) {
-	//dMod, err := s.callModifiers(data, s.txModifiers)
-	//if err != nil {
-	//	return
-	//}
+	dMod, err := s.callModifiers(data, s.txModifiers)
+	if err != nil {
+		return
+	}
 
-	ptc, src, dst, err := util.GetPacketBaseInfo(data, n)
+	ptc, src, dst, err := util.GetPacketBaseInfo(dMod, n)
 	if err != nil {
 		return
 	}
 
 	cAddr := s.cAddrStore.Get(dst)
-	err = s.conn.Send(data, cAddr)
+	err = s.conn.Send(dMod, cAddr)
 	if err != nil {
 		return
 	}
