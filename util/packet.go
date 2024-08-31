@@ -1,12 +1,21 @@
 package util
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+)
+
+const (
+	ProtoUdp = 6
+	ProtoTcp = 17
+)
 
 func GetPacketBaseInfo(d []byte) (int, string, string) {
 	return GetPacketProtocol(d), GetPacketSrc(d), GetPacketDst(d)
 }
 
 func GetPacketProtocol(d []byte) int {
+	log.Println(len(d))
 	return int(d[9])
 }
 

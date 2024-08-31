@@ -6,12 +6,12 @@ import (
 )
 
 type Tun struct {
-	name       string
-	ip         string
-	cidr       int
-	mtu        int
-	iface      *Interface
-	readPacket []byte
+	name  string
+	ip    string
+	cidr  int
+	mtu   int
+	iface *Interface
+	//readPacket []byte
 }
 
 func NewTun(c *Config) (*Tun, error) {
@@ -21,12 +21,12 @@ func NewTun(c *Config) (*Tun, error) {
 	}
 
 	tun := &Tun{
-		name:       c.Name,
-		ip:         c.Ip,
-		cidr:       c.Cidr,
-		mtu:        c.Mtu,
-		iface:      iface,
-		readPacket: make([]byte, c.Mtu*2),
+		name:  c.Name,
+		ip:    c.Ip,
+		cidr:  c.Cidr,
+		mtu:   c.Mtu,
+		iface: iface,
+		//readPacket: make([]byte, c.Mtu*2),
 	}
 
 	err = tun.up()
@@ -38,11 +38,12 @@ func NewTun(c *Config) (*Tun, error) {
 }
 
 func (tun *Tun) Receive() (int, []byte, error) {
-	n, err := tun.iface.Read(tun.readPacket)
+	packet := make([]byte, tun.mtu*2)
+	n, err := tun.iface.Read(packet)
 	if err != nil {
 		return 0, nil, fmt.Errorf("failed to read from tun: %s", err)
 	}
-	return n, tun.readPacket[:n], err
+	return n, packet[:n], err
 }
 
 func (tun *Tun) Send(data []byte) error {

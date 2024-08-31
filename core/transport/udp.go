@@ -6,9 +6,9 @@ import (
 )
 
 type UDPConn struct {
-	conn       *net.UDPConn
-	mtu        int
-	readPacket []byte
+	conn *net.UDPConn
+	mtu  int
+	//readPacket []byte
 }
 
 func NewConn(c *Config) (*UDPConn, error) {
@@ -23,18 +23,19 @@ func NewConn(c *Config) (*UDPConn, error) {
 	}
 
 	return &UDPConn{
-		conn:       conn,
-		mtu:        c.Mtu,
-		readPacket: make([]byte, c.Mtu*2),
+		conn: conn,
+		mtu:  c.Mtu,
+		//readPacket: make([]byte, c.Mtu*2),
 	}, nil
 }
 
 func (conn *UDPConn) Receive() (int, []byte, string, error) {
-	n, addr, err := conn.conn.ReadFromUDP(conn.readPacket)
+	readPacket := make([]byte, conn.mtu*2)
+	n, addr, err := conn.conn.ReadFromUDP(readPacket)
 	if err != nil {
 		return 0, nil, "", fmt.Errorf("failed to read from udp: %s", err)
 	}
-	return n, conn.readPacket[:n], addr.String(), nil
+	return n, readPacket[:n], addr.String(), nil
 }
 
 func (conn *UDPConn) Send(data []byte, cAddr string) error {
