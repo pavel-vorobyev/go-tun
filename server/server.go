@@ -7,6 +7,7 @@ import (
 	"go-tun/server/config"
 	"go-tun/server/storage"
 	"go-tun/util"
+	"log"
 	"os"
 )
 
@@ -96,6 +97,10 @@ func (s *Server) handleConnPacket(n int, data []byte, cAddr string) {
 	if err != nil {
 		return
 	}
+
+	log.Println(cAddr)
+	log.Println(data)
+	log.Println("------------------")
 
 	ptc, src, dst, err := util.GetPacketBaseInfo(dMod, n)
 	if err != nil {
